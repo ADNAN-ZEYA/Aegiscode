@@ -1,10 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'export',       // <--- REQUIRED: Generates the HTML files for Firebase
   images: {
-    unoptimized: true,    // <--- REQUIRED: Fixes image loading on Firebase
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+      },
+    ],
   },
+  serverExternalPackages: ['firebase-admin'],
 };
 
 export default nextConfig;
