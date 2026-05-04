@@ -1,36 +1,46 @@
 # AegisCode
 
-**Learn Tech, Build Future** — A free, open-source educational hub with curated technical notes, study guides, and blog posts for students. No ads, no fluff, no clickbait.
+A production-grade educational content platform built with **Next.js 15 App Router**, **TypeScript**, **Tailwind CSS**, and **Firebase**.
 
-Covers: Cybersecurity · Linux · Web Development · Python · JEE Prep
+Built reading-first: blogs, study materials, and courses are all delivered as clean, searchable text pages — not file dumps.
+
+---
+
+## Platform Overview
+
+### For Students
+- Browse and read blog posts, study materials, and structured courses
+- Take interactive mock tests / quizzes
+- Track reading progress, save bookmarks
+- Create an account or sign in with Google
+- Student portal at `/dashboard`
+
+### For Admins
+- Separate admin login portal at `/admin/login` (inaccessible to regular users)
+- Upload PDF study material — text is auto-extracted and saved as readable content
+- Create and publish blogs, study materials, courses, and quizzes
+- Track platform analytics: daily views, weekly readers, completion rates
+- Manage users and roles
+- Admin role is controlled strictly by `ADMIN_EMAILS` env variable — no one else can access the admin panel
 
 ---
 
 ## Tech Stack
 
-| Layer | Tool |
-|-------|------|
-| Framework | Next.js (static export) |
-| Styling | Tailwind CSS v3 + `@tailwindcss/typography` |
-| Dark Mode | `next-themes` |
-| Content | Markdown + `gray-matter` + `remark` |
-| Icons | `lucide-react` |
-| Forms | Formspree |
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| UI Primitives | Radix UI (ShadCN-style) |
+| Animations | Framer Motion |
+| Auth | Firebase Authentication (Email/Password + Google) |
+| Database | Cloud Firestore |
+| Storage | Firebase Storage |
 | Hosting | Firebase Hosting |
-
----
-
-## Pages
-
-| Route | Description |
-|-------|-------------|
-| `/` | Home — hero, stats, featured courses, latest posts, cheatsheets |
-| `/blog` | Blog archive with real-time search by title or category |
-| `/blog/[slug]` | Individual post (rendered from Markdown) |
-| `/resources` | Learning roadmaps and downloadable PDF cheatsheets |
-| `/projects` | Open-source project showcase |
-| `/about` | Philosophy — No Fluff, Open Source, Anonymous |
-| `/contact` | Bug reports, suggestions, and reviews via Formspree |
+| Forms | React Hook Form + Zod |
+| PDF Extraction | pdf-parse (server-side) |
+| Payments (scaffold) | Razorpay |
 
 ---
 
@@ -38,85 +48,147 @@ Covers: Cybersecurity · Linux · Web Development · Python · JEE Prep
 
 ```
 aegiscode/
-├── pages/              # Next.js routes
-│   ├── index.js        # Home page
-│   ├── about.js
-│   ├── contact.js
-│   ├── blog/
-│   │   ├── index.js    # Blog archive with search
-│   │   └── [slug].js   # Dynamic post page
-│   ├── projects/
-│   └── resources/
-├── components/         # Reusable UI
-│   ├── Layout.js       # Page wrapper (header + footer)
-│   ├── Header.js       # Sticky nav with theme toggle + mobile menu
-│   ├── Footer.js
-│   ├── PostCard.js     # Blog post card
-│   ├── Newsletter.js   # Email subscribe form
-│   └── CodeBlock.js    # Syntax-highlighted code wrapper
-├── lib/
-│   └── posts.js        # Markdown parsing utilities
-├── posts/              # Markdown content files
-├── public/             # Static assets (images, PDFs)
-├── styles/
-│   └── globals.css
-├── next.config.mjs     # output: 'export' for static build
-└── firebase.json       # Hosting config pointing to /out
+├── app/
+│   ├── (auth)/              # Student login, signup, forgot-password
+│   ├── (marketing)/         # Homepage, blog, courses, quizzes, study-materials
+│   ├── admin/
+│   │   ├── login/           # Separate admin-only login page
+│   │   └── (protected)/     # Dashboard, content, pdf-upload, courses, quizzes, users
+│   ├── api/
+│   │   ├── admin/extract-pdf/   # PDF text extraction endpoint
+│   │   ├── analytics/view/      # View tracking endpoint
+│   │   └── auth/                # Session, profile, signout endpoints
+│   └── dashboard/           # Student dashboard
+├── src/
+│   ├── components/          # UI, layout, content cards, motion wrappers
+│   ├── features/            # Admin forms, auth schemas
+│   ├── hooks/               # Reading progress hook
+│   ├── lib/                 # Firebase client/admin, auth helpers, SEO, utils
+│   ├── services/            # Firestore data access (content, courses, users...)
+│   └── types/               # TypeScript interfaces
+├── posts/                   # Seed markdown content (migrate to Firestore)
+├── public/                  # Static assets
+├── middleware.ts            # Admin route protection
+├── firestore.rules          # Firestore security rules
+├── storage.rules            # Storage security rules
+└── tailwind.config.js
 ```
 
 ---
 
-## Content Authoring
+## Firestore Collections
 
-Posts live in the `posts/` folder as Markdown files (nested subfolders supported).
+| Collection | Purpose |
+|---|---|
+| `users` | User profiles with role field |
+| `blogs` | Blog posts |
+| `studyMaterials` | Study material content |
+| `courses` | Course metadata + modules |
+| `quizzes` | Quiz questions and metadata |
+| `quizAttempts` | User quiz attempt records |
+| `categories` | Content category definitions |
+| `bookmarks` | User bookmarks |
+| `analytics` | Platform analytics snapshot |
 
-Each file must have YAML front matter:
-
-```yaml
 ---
-title: "Lesson 1: Python Basics"
-date: "2025-12-14"
-description: "A short description shown on the blog card."
-image: "/images/python.jpg"
-category: "Python Course"
----
 
-Your markdown content here...
+## Environment Variables
+
+Copy `.env.example` and fill in values:
+
+```bash
+cp .env.example .env.local
 ```
 
-`lib/posts.js` recursively scans `posts/`, parses front matter with `gray-matter`, converts Markdown to HTML with `remark`, and returns data sorted by date (newest first).
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase web app API key |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID |
+| `FIREBASE_ADMIN_PROJECT_ID` | Service account project ID |
+| `FIREBASE_ADMIN_CLIENT_EMAIL` | Service account client email |
+| `FIREBASE_ADMIN_PRIVATE_KEY` | Service account private key |
+| `FIREBASE_ADMIN_STORAGE_BUCKET` | Admin storage bucket |
+| `ADMIN_EMAILS` | Comma-separated admin email addresses |
+| `NEXT_PUBLIC_ADMIN_EMAILS` | Same as above (client-side UI check) |
+| `NEXT_PUBLIC_APP_URL` | Base URL of your deployment |
 
 ---
 
-## Quick Start
+## Local Development
 
 ```bash
 npm install
 npm run dev
-# open http://localhost:3000
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+**Admin portal:** [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
+
+---
+
+## Admin Workflow
+
+### Uploading Study Content via PDF
+1. Go to **Admin Portal** → `/admin/login`
+2. Sign in with your admin email
+3. Click **Upload PDF** in the sidebar
+4. Upload your PDF — text is extracted automatically
+5. Fill in title, slug, category (e.g. `dsa`, `operating-system`), and tags
+6. Set status to `Published` and click **Save Study Material**
+
+### Creating a Course with Modules
+1. Go to **Courses** in the admin sidebar
+2. Fill in course metadata
+3. In **Modules JSON**, provide an array of module objects:
+```json
+[
+  {
+    "id": "module-1",
+    "title": "Arrays & Strings",
+    "slug": "arrays-and-strings",
+    "summary": "Core array operations and string manipulation",
+    "markdown": "## Arrays\n\nContent here...",
+    "order": 1,
+    "estimatedMinutes": 30
+  }
+]
 ```
 
 ---
 
-## Build & Deploy
+## Firebase Deployment
 
 ```bash
-# Build static site (outputs to /out)
+# Install Firebase CLI if not already
+npm install -g firebase-tools
+
+# Login
+firebase login
+
+# Build the app
 npm run build
 
 # Deploy to Firebase Hosting
-firebase deploy --only hosting
+firebase deploy
 ```
-
-`next.config.mjs` sets `output: 'export'` — no server required. All pages are pre-rendered at build time.
 
 ---
 
-## Available Scripts
+## Security
 
-| Script | Command |
-|--------|---------|
-| `dev` | `next dev` — development server |
-| `build` | `next build` — static export to `/out` |
-| `start` | `next start` — production server |
-| `lint` | `next lint` |
+- Firestore rules enforce role-based access — students can only read published content
+- Admin routes are protected at both middleware level and server component level
+- Admin role is resolved exclusively from `ADMIN_EMAILS` env variable — never from client input
+- Session cookies are `httpOnly`, `sameSite: lax`, and `secure` in production
+- `.env.local` is gitignored — secrets are never committed
+
+---
+
+## License
+
+MIT

@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isPublished() {
+      return resource.data.status == 'published';
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if false;
+    }
+
+    match /blogs/{document=**} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /studyMaterials/{document=**} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /quizzes/{document=**} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /courses/{document=**} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /quizAttempts/{attemptId} {
+      allow read: if isAdmin() || isOwner(resource.data.userId);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow read: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    match /analytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
