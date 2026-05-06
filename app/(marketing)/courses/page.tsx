@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { buildMetadata } from '@/lib/seo';
 import { listCategories } from '@/services/content.service';
 import { listCourses } from '@/services/course.service';

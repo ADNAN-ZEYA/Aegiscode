@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { buildMetadata } from '@/lib/seo';
 import { ContentCard } from '@/components/content/content-card';
 import { PaginationLink } from '@/components/content/pagination-link';

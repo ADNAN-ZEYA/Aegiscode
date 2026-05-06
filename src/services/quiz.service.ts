@@ -1,5 +1,4 @@
 import { adminDb } from '@/lib/firebase/admin';
-import { demoQuizzes } from '@/lib/demo-data';
 import type { PaginatedResult } from '@/types/common';
 import type { Quiz } from '@/types/quiz';
 
@@ -18,7 +17,7 @@ export async function listQuizzes(limit = 12): Promise<PaginatedResult<Quiz>> {
     };
   }
 
-  return { items: demoQuizzes.slice(0, limit) };
+  return { items: [] };
 }
 
 export async function getQuizBySlug(slug: string) {
@@ -29,5 +28,5 @@ export async function getQuizBySlug(slug: string) {
     }
   }
 
-  return demoQuizzes.find((quiz) => quiz.slug === slug) ?? null;
+  return null;
 }

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { ArrowRight, BookMarked, ChartColumnIncreasing, GraduationCap, SearchCheck } from 'lucide-react';
 import { ContentCard } from '@/components/content/content-card';

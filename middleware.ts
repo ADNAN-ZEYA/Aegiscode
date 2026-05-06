@@ -12,10 +12,9 @@ export function middleware(request: NextRequest) {
   // Protect all other /admin routes
   if (pathname.startsWith('/admin')) {
     const session = request.cookies.get('session')?.value;
-    const devSession = request.cookies.get('dev-session')?.value;
 
-    if (!session && !devSession) {
-      // Redirect unauthenticated users to ADMIN login, not user login
+    if (!session) {
+      // Redirect unauthenticated users to ADMIN login
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('next', pathname);
       return NextResponse.redirect(loginUrl);

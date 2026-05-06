@@ -1,16 +1,6 @@
 import { adminDb } from '@/lib/firebase/admin';
-import { demoCourses } from '@/lib/demo-data';
-import type { PaginatedResult } from '@/types/common';
-import type { Course } from '@/types/course';
 
-function paginate(items: Course[], cursor?: string, limit = 6): PaginatedResult<Course> {
-  const startIndex = cursor ? items.findIndex((item) => item.slug === cursor) + 1 : 0;
-  const pageItems = items.slice(startIndex, startIndex + limit);
-  return {
-    items: pageItems,
-    nextCursor: pageItems.length === limit ? pageItems.at(-1)?.slug : undefined,
-  };
-}
+import type { Course } from '@/types/course';
 
 export async function listCourses({
   query,
@@ -56,15 +46,7 @@ export async function listCourses({
     };
   }
 
-  const filtered = demoCourses.filter((course) => {
-    if (category && course.categorySlug !== category) return false;
-    if (query) {
-      const needle = query.toLowerCase();
-      return course.title.toLowerCase().includes(needle) || course.excerpt.toLowerCase().includes(needle);
-    }
-    return true;
-  });
-  return paginate(filtered, cursor, limit);
+  return { items: [] };
 }
 
 export async function getCourseBySlug(slug: string) {
@@ -75,5 +57,5 @@ export async function getCourseBySlug(slug: string) {
     }
   }
 
-  return demoCourses.find((course) => course.slug === slug) ?? null;
+  return null;
 }
