@@ -2,7 +2,6 @@ import { adminDb } from '@/lib/firebase/admin';
 import type { Category, PaginatedResult } from '@/types/common';
 import type { BlogPost, StudyMaterial } from '@/types/content';
 
-type ContentCollection = 'content';
 type ContentItem = BlogPost | StudyMaterial;
 
 interface ListContentOptions {
