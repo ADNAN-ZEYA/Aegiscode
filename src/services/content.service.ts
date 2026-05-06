@@ -2,6 +2,7 @@ import { adminDb } from '@/lib/firebase/admin';
 import type { Category, PaginatedResult } from '@/types/common';
 import type { BlogPost, StudyMaterial } from '@/types/content';
 
+type ContentCollection = 'content';
 type ContentItem = BlogPost | StudyMaterial;
 
 interface ListContentOptions {
@@ -108,4 +109,19 @@ export async function listCategories(): Promise<Category[]> {
   }
 
   return [];
+}
+
+export async function getBasicContentBySlugs(slugs: string[]) {
+  if (!adminDb || !slugs || slugs.length === 0) return [];
+  
+  const refs = slugs.map(slug => adminDb!.collection('content').doc(slug));
+  const snapshots = await adminDb.getAll(...refs);
+  
+  return snapshots
+    .filter(doc => doc.exists && doc.data()?.status === 'published')
+    .map(doc => ({
+      slug: doc.id,
+      title: doc.data()?.title || '',
+      type: doc.data()?.type || 'blog',
+    }));
 }

@@ -40,6 +40,10 @@ export interface BaseContent extends AuditFields {
   markdown: string;
   blocks: ContentBlock[];
   attachments?: ContentAttachment[];
+  relations?: {
+    relatedSlugs: string[];
+    prerequisiteSlugs: string[];
+  };
 }
 
 export interface BlogPost extends BaseContent {
