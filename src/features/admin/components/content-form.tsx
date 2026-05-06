@@ -32,8 +32,13 @@ export function ContentForm({ onSubmit }: { onSubmit?: (input: ContentInput) => 
   const submit = form.handleSubmit(async (values) => {
     startTransition(async () => {
       try {
-        await onSubmit?.({ ...values, markdown });
-        setStatusMessage('Saved successfully.');
+        const result = await onSubmit?.({ ...values, markdown }) as { ok?: boolean; message?: string } | undefined;
+        if (result && result.ok === false) {
+          setStatusMessage(result.message || 'Unable to save content.');
+        } else {
+          setStatusMessage('Saved successfully.');
+          form.reset();
+        }
       } catch (error) {
         console.error(error);
         setStatusMessage('Unable to save content.');
@@ -95,9 +100,21 @@ export function ContentForm({ onSubmit }: { onSubmit?: (input: ContentInput) => 
 
       <RichTextEditor value={markdown} onChange={setMarkdown} />
 
-      <div className="flex items-center gap-4">
-        <Button type="submit" disabled={isPending}>Save content</Button>
-        {statusMessage ? <p className="text-sm text-muted-foreground">{statusMessage}</p> : null}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-4">
+          <Button type="submit" disabled={isPending}>Save content</Button>
+          {statusMessage ? <p className="text-sm text-muted-foreground">{statusMessage}</p> : null}
+        </div>
+        {Object.keys(form.formState.errors).length > 0 && (
+          <div className="text-sm text-destructive">
+            Please fix the following validation errors:
+            <ul className="list-disc pl-5 mt-1">
+              {Object.entries(form.formState.errors).map(([field, error]) => (
+                <li key={field}>{field}: {error?.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </form>
   );

@@ -1,5 +1,4 @@
 import { adminDb } from '@/lib/firebase/admin';
-import { demoBlogs, demoCategories, demoStudyMaterials } from '@/lib/demo-data';
 import type { Category, PaginatedResult } from '@/types/common';
 import type { BlogPost, StudyMaterial } from '@/types/content';
 
@@ -11,17 +10,6 @@ interface ListContentOptions {
   query?: string;
   cursor?: string;
   limit?: number;
-}
-
-function paginate<T extends { slug: string }>(items: T[], cursor?: string, limit = 6): PaginatedResult<T> {
-  const startIndex = cursor ? items.findIndex((item) => item.slug === cursor) + 1 : 0;
-  const pageItems = items.slice(startIndex, startIndex + limit);
-  const last = pageItems.at(-1);
-
-  return {
-    items: pageItems,
-    nextCursor: pageItems.length === limit && last ? last.slug : undefined,
-  };
 }
 
 function filterContent<T extends ContentItem>(items: T[], options: ListContentOptions) {
@@ -80,20 +68,12 @@ async function listFromFirestore<T extends ContentItem>(
 
 export async function listBlogs(options: ListContentOptions = {}) {
   const firestoreData = await listFromFirestore<BlogPost>('blogs', options);
-  if (firestoreData) {
-    return firestoreData;
-  }
-
-  return paginate(filterContent(demoBlogs, options), options.cursor, options.limit);
+  return firestoreData ?? { items: [] };
 }
 
 export async function listStudyMaterials(options: ListContentOptions = {}) {
   const firestoreData = await listFromFirestore<StudyMaterial>('studyMaterials', options);
-  if (firestoreData) {
-    return firestoreData;
-  }
-
-  return paginate(filterContent(demoStudyMaterials, options), options.cursor, options.limit);
+  return firestoreData ?? { items: [] };
 }
 
 export async function getBlogBySlug(slug: string) {
@@ -104,7 +84,7 @@ export async function getBlogBySlug(slug: string) {
     }
   }
 
-  return demoBlogs.find((item) => item.slug === slug) ?? null;
+  return null;
 }
 
 export async function getStudyMaterialBySlug(slug: string) {
@@ -115,7 +95,7 @@ export async function getStudyMaterialBySlug(slug: string) {
     }
   }
 
-  return demoStudyMaterials.find((item) => item.slug === slug) ?? null;
+  return null;
 }
 
 export async function listCategories(): Promise<Category[]> {
@@ -124,5 +104,5 @@ export async function listCategories(): Promise<Category[]> {
     return snapshot.docs.map((doc) => doc.data() as Category);
   }
 
-  return demoCategories;
+  return [];
 }

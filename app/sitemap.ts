@@ -5,9 +5,9 @@ import { listQuizzes } from '@/services/quiz.service';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [blogs, materials, quizzes] = await Promise.all([
-    listBlogs({ limit: 50 }),
-    listStudyMaterials({ limit: 50 }),
-    listQuizzes(50),
+    listBlogs({ limit: 50 }).catch(() => ({ items: [] })),
+    listStudyMaterials({ limit: 50 }).catch(() => ({ items: [] })),
+    listQuizzes(50).catch(() => ({ items: [] })),
   ]);
 
   const staticRoutes = ['', '/blog', '/study-materials', '/quizzes'].map((path) => ({
