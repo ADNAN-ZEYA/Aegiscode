@@ -16,7 +16,8 @@ import { requireAdmin } from '@/lib/auth';
 
 const adminLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/content', label: 'Content', icon: BookOpen },
+  { href: '/admin/content', label: 'New Content', icon: BookOpen },
+  { href: '/admin/history', label: 'History & Edits', icon: BookOpen },
   { href: '/admin/pdf-upload', label: 'Upload PDF', icon: FileUp },
   { href: '/admin/courses', label: 'Courses', icon: FolderKanban },
   { href: '/admin/quizzes', label: 'Quizzes', icon: GraduationCap },
