@@ -27,7 +27,9 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
         remarkPlugins={[remarkGfm]} 
         rehypePlugins={[rehypeHighlight]}
         components={{
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           pre: ({ node, ...props }) => <CodeBlock {...props} />,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           code: ({ node, className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || '');
             const isInline = !match && !className?.includes('hljs');
