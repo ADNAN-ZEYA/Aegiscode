@@ -10,22 +10,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-export function ContentForm({ onSubmit }: { onSubmit?: (input: ContentInput) => Promise<unknown> | unknown }) {
-  const [markdown, setMarkdown] = useState('## Start writing\n\nAdd structured educational content here.');
+export function ContentForm({ 
+  onSubmit,
+  initialValues
+}: { 
+  onSubmit?: (input: ContentInput) => Promise<unknown> | unknown;
+  initialValues?: Partial<ContentInput>;
+}) {
+  const [markdown, setMarkdown] = useState(initialValues?.markdown || '## Start writing\n\nAdd structured educational content here.');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<ContentInput>({
     resolver: zodResolver(contentSchema),
     defaultValues: {
-      contentType: 'blog',
-      title: '',
-      slug: '',
-      excerpt: '',
-      categorySlug: '',
-      tags: '',
-      markdown,
-      status: 'draft',
-      coverImage: '',
+      contentType: initialValues?.contentType || 'blog',
+      title: initialValues?.title || '',
+      slug: initialValues?.slug || '',
+      excerpt: initialValues?.excerpt || '',
+      categorySlug: initialValues?.categorySlug || '',
+      tags: initialValues?.tags || '',
+      markdown: initialValues?.markdown || markdown,
+      status: initialValues?.status || 'draft',
+      coverImage: initialValues?.coverImage || '',
     },
   });
 
