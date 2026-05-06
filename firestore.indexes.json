@@ -1,7 +1,7 @@
 {
   "indexes": [
     {
-      "collectionGroup": "blogs",
+      "collectionGroup": "content",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "status", "order": "ASCENDING" },
@@ -9,26 +9,19 @@
       ]
     },
     {
-      "collectionGroup": "blogs",
+      "collectionGroup": "content",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "categorySlug", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "publishedAt", "order": "DESCENDING" }
       ]
     },
     {
-      "collectionGroup": "studyMaterials",
+      "collectionGroup": "content",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "publishedAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "studyMaterials",
-      "queryScope": "COLLECTION",
-      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "categorySlug", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "publishedAt", "order": "DESCENDING" }

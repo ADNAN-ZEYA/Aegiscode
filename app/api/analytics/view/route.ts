@@ -11,8 +11,8 @@ export async function POST(request: Request) {
   }
 
   const collectionMap = {
-    blog: 'blogs',
-    studyMaterial: 'studyMaterials',
+    blog: 'content',
+    studyMaterial: 'content',
     quiz: 'quizzes',
   } as const;
 

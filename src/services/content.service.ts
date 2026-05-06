@@ -2,7 +2,7 @@ import { adminDb } from '@/lib/firebase/admin';
 import type { Category, PaginatedResult } from '@/types/common';
 import type { BlogPost, StudyMaterial } from '@/types/content';
 
-type ContentCollection = 'blogs' | 'studyMaterials';
+type ContentCollection = 'content';
 type ContentItem = BlogPost | StudyMaterial;
 
 interface ListContentOptions {
@@ -10,6 +10,7 @@ interface ListContentOptions {
   query?: string;
   cursor?: string;
   limit?: number;
+  type?: 'blog' | 'studyMaterial';
 }
 
 function filterContent<T extends ContentItem>(items: T[], options: ListContentOptions) {
@@ -32,7 +33,6 @@ function filterContent<T extends ContentItem>(items: T[], options: ListContentOp
 }
 
 async function listFromFirestore<T extends ContentItem>(
-  collectionName: ContentCollection,
   options: ListContentOptions,
 ): Promise<PaginatedResult<T> | null> {
   if (!adminDb) {
@@ -40,17 +40,21 @@ async function listFromFirestore<T extends ContentItem>(
   }
 
   let query = adminDb
-    .collection(collectionName)
-    .where('status', '==', 'published')
-    .orderBy('publishedAt', 'desc')
-    .limit(options.limit ?? 6);
+    .collection('content')
+    .where('status', '==', 'published');
+
+  if (options.type) {
+    query = query.where('type', '==', options.type);
+  }
+
+  query = query.orderBy('publishedAt', 'desc').limit(options.limit ?? 6);
 
   if (options.category) {
     query = query.where('categorySlug', '==', options.category);
   }
 
   if (options.cursor) {
-    const cursorDoc = await adminDb.collection(collectionName).doc(options.cursor).get();
+    const cursorDoc = await adminDb.collection('content').doc(options.cursor).get();
     if (cursorDoc.exists) {
       query = query.startAfter(cursorDoc);
     }
@@ -67,19 +71,19 @@ async function listFromFirestore<T extends ContentItem>(
 }
 
 export async function listBlogs(options: ListContentOptions = {}) {
-  const firestoreData = await listFromFirestore<BlogPost>('blogs', options);
+  const firestoreData = await listFromFirestore<BlogPost>({ ...options, type: 'blog' });
   return firestoreData ?? { items: [] };
 }
 
 export async function listStudyMaterials(options: ListContentOptions = {}) {
-  const firestoreData = await listFromFirestore<StudyMaterial>('studyMaterials', options);
+  const firestoreData = await listFromFirestore<StudyMaterial>({ ...options, type: 'studyMaterial' });
   return firestoreData ?? { items: [] };
 }
 
 export async function getBlogBySlug(slug: string) {
   if (adminDb) {
-    const snapshot = await adminDb.collection('blogs').doc(slug).get();
-    if (snapshot.exists) {
+    const snapshot = await adminDb.collection('content').doc(slug).get();
+    if (snapshot.exists && snapshot.data()?.type === 'blog') {
       return { ...(snapshot.data() as BlogPost), slug };
     }
   }
@@ -89,8 +93,8 @@ export async function getBlogBySlug(slug: string) {
 
 export async function getStudyMaterialBySlug(slug: string) {
   if (adminDb) {
-    const snapshot = await adminDb.collection('studyMaterials').doc(slug).get();
-    if (snapshot.exists) {
+    const snapshot = await adminDb.collection('content').doc(slug).get();
+    if (snapshot.exists && snapshot.data()?.type === 'studyMaterial') {
       return { ...(snapshot.data() as StudyMaterial), slug };
     }
   }
