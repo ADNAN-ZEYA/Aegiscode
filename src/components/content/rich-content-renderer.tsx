@@ -6,6 +6,8 @@ import { AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ContentBlock } from '@/types/content';
 
+import { CodeBlock } from './code-block';
+
 const calloutStyles = {
   info: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-900 dark:text-emerald-100',
   warning: 'border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100',
@@ -20,8 +22,22 @@ const calloutIcons = {
 
 export function RichContentRenderer({ markdown, blocks }: { markdown: string; blocks?: ContentBlock[] }) {
   return (
-    <div className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-foreground prose-a:text-primary dark:prose-invert">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+    <div className="prose prose-base md:prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-a:text-primary dark:prose-invert prose-pre:p-0 prose-pre:bg-transparent">
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]} 
+        rehypePlugins={[rehypeHighlight]}
+        components={{
+          pre: ({ node, ...props }) => <CodeBlock {...props} />,
+          code: ({ node, className, children, ...props }: any) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const isInline = !match && !className?.includes('hljs');
+            if (isInline) {
+              return <code className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[0.875em] font-medium text-primary" {...props}>{children}</code>;
+            }
+            return <code className={className} {...props}>{children}</code>;
+          }
+        }}
+      >
         {markdown}
       </ReactMarkdown>
 
