@@ -14,10 +14,9 @@ export async function saveContentAction(input: ContentInput) {
     return { ok: false, message: 'Firebase Admin is not configured yet.' };
   }
 
-  const collectionName = parsed.contentType === 'blog' ? 'blogs' : 'studyMaterials';
   const now = new Date().toISOString();
 
-  await adminDb.collection(collectionName).doc(parsed.slug).set(
+  await adminDb.collection('content').doc(parsed.slug).set(
     {
       title: parsed.title,
       excerpt: parsed.excerpt,
@@ -43,13 +42,13 @@ export async function saveContentAction(input: ContentInput) {
         title: parsed.title,
         description: parsed.excerpt,
       },
+      type: parsed.contentType,
       ...(parsed.contentType === 'studyMaterial'
         ? {
-            type: 'studyMaterial',
             difficulty: 'intermediate',
             estimatedCompletionMinutes: Math.max(5, Math.ceil(parsed.markdown.split(/\s+/).length / 180)),
           }
-        : { type: 'blog' }),
+        : {}),
     },
     { merge: true },
   );

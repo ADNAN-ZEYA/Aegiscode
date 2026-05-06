@@ -9,9 +9,8 @@ export const dynamic = 'force-dynamic';
 
 async function getContent(type: string, slug: string) {
   if (!adminDb) return null;
-  const collectionName = type === 'blog' ? 'blogs' : 'studyMaterials';
-  const doc = await adminDb.collection(collectionName).doc(slug).get();
-  if (!doc.exists) return null;
+  const doc = await adminDb.collection('content').doc(slug).get();
+  if (!doc.exists || doc.data()?.type !== type) return null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { id: doc.id, ...doc.data() } as any;
 }
