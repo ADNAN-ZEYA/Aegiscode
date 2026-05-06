@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string }>;
+const pdfParse = require('pdf-parse/lib/pdf-parse.js') as (buffer: Buffer) => Promise<{ text: string }>;
 import { getServerUserProfile } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ text: data.text });
   } catch (error) {
     console.error('Error extracting PDF:', error);
-    return NextResponse.json({ error: 'Failed to extract PDF text' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to extract PDF text', details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }
