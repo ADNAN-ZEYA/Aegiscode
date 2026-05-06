@@ -10,6 +10,8 @@ export const contentSchema = z.object({
   markdown: z.string().min(50),
   status: z.enum(['draft', 'published', 'archived']),
   coverImage: z.string().url().optional().or(z.literal('')),
+  relatedContentSlugs: z.string().optional(),
+  prerequisiteSlugs: z.string().optional(),
 });
 
 export type ContentInput = z.infer<typeof contentSchema>;

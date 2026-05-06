@@ -42,6 +42,10 @@ export async function saveContentAction(input: ContentInput) {
         title: parsed.title,
         description: parsed.excerpt,
       },
+      relations: {
+        relatedSlugs: parsed.relatedContentSlugs ? parsed.relatedContentSlugs.split(',').map(s => s.trim()).filter(Boolean) : [],
+        prerequisiteSlugs: parsed.prerequisiteSlugs ? parsed.prerequisiteSlugs.split(',').map(s => s.trim()).filter(Boolean) : [],
+      },
       type: parsed.contentType,
       ...(parsed.contentType === 'studyMaterial'
         ? {

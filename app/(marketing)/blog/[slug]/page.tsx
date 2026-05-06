@@ -5,7 +5,7 @@ import { RichContentRenderer } from '@/components/content/rich-content-renderer'
 import { ViewTracker } from '@/components/content/view-tracker';
 import { buildMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
-import { getBlogBySlug } from '@/services/content.service';
+import { getBlogBySlug, getBasicContentBySlugs } from '@/services/content.service';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -34,6 +34,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     notFound();
   }
 
+  const [prerequisites, related] = await Promise.all([
+    post.relations?.prerequisiteSlugs?.length 
+      ? getBasicContentBySlugs(post.relations.prerequisiteSlugs) 
+      : Promise.resolve([]),
+    post.relations?.relatedSlugs?.length 
+      ? getBasicContentBySlugs(post.relations.relatedSlugs) 
+      : Promise.resolve([])
+  ]);
+
   return (
     <>
       <ReadingProgress />
@@ -50,7 +59,50 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
           <BookmarkButton contentId={post.slug} contentType="blog" />
         </header>
+
+        {prerequisites.length > 0 && (
+          <div className="mb-12 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Prerequisites
+            </h3>
+            <p className="mb-4 text-sm text-muted-foreground">Before reading this, make sure you understand:</p>
+            <ul className="flex flex-col gap-2">
+              {prerequisites.map((pre) => (
+                <li key={pre.slug}>
+                  <a href={`/${pre.type === 'studyMaterial' ? 'study-materials' : 'blog'}/${pre.slug}`} className="group flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-primary">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500/50 group-hover:bg-primary" />
+                    {pre.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <RichContentRenderer markdown={post.markdown} blocks={post.blocks} />
+
+        {related.length > 0 && (
+          <div className="mt-16 rounded-3xl border border-border bg-muted/30 p-8">
+            <h3 className="mb-6 text-xl font-semibold">Keep learning</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {related.map((rel) => (
+                <a 
+                  key={rel.slug} 
+                  href={`/${rel.type === 'studyMaterial' ? 'study-materials' : 'blog'}/${rel.slug}`}
+                  className="flex flex-col justify-between rounded-xl border border-border bg-background p-5 transition hover:border-primary/50 hover:shadow-md"
+                >
+                  <div>
+                    <span className="mb-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      {rel.type === 'studyMaterial' ? 'Study Material' : 'Blog'}
+                    </span>
+                    <h4 className="font-medium text-foreground line-clamp-2">{rel.title}</h4>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </article>
     </>
   );

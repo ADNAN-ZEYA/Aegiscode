@@ -32,6 +32,8 @@ export function ContentForm({
       markdown: initialValues?.markdown || markdown,
       status: initialValues?.status || 'draft',
       coverImage: initialValues?.coverImage || '',
+      relatedContentSlugs: initialValues?.relatedContentSlugs || '',
+      prerequisiteSlugs: initialValues?.prerequisiteSlugs || '',
     },
   });
 
@@ -101,6 +103,14 @@ export function ContentForm({
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="coverImage">Cover image URL</Label>
           <Input id="coverImage" {...form.register('coverImage')} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="prerequisiteSlugs">Prerequisite Slugs (comma separated)</Label>
+          <Input id="prerequisiteSlugs" {...form.register('prerequisiteSlugs')} placeholder="intro-to-js, basic-auth" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="relatedContentSlugs">Related Slugs (comma separated)</Label>
+          <Input id="relatedContentSlugs" {...form.register('relatedContentSlugs')} placeholder="advanced-auth, security-best-practices" />
         </div>
       </div>
 
