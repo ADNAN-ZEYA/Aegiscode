@@ -3,23 +3,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
-import { AlertTriangle, CheckCircle2, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { ContentBlock } from '@/types/content';
-
+import { QuizTaker } from '../quiz/quiz-taker';
+import { Callout } from './callout';
 import { CodeBlock } from './code-block';
-
-const calloutStyles = {
-  info: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-900 dark:text-emerald-100',
-  warning: 'border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100',
-  success: 'border-sky-500/30 bg-sky-500/10 text-sky-900 dark:text-sky-100',
-};
-
-const calloutIcons = {
-  info: Info,
-  warning: AlertTriangle,
-  success: CheckCircle2,
-};
+import type { ContentBlock } from '@/types/content';
 
 export function RichContentRenderer({ markdown, blocks }: { markdown: string; blocks?: ContentBlock[] }) {
   return (
@@ -33,6 +20,20 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           code: ({ node, className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || '');
+            const lang = match ? match[1] : '';
+
+            // Interactive Quiz Shortcode: ```quiz slug-here ```
+            if (lang === 'quiz') {
+              const slug = String(children).trim();
+              return <QuizTaker slug={slug} />;
+            }
+
+            // Interactive Callout Shortcode: ```callout:tone content-here ```
+            if (lang.startsWith('callout:')) {
+              const tone = lang.split(':')[1] as any;
+              return <Callout tone={tone}>{children}</Callout>;
+            }
+
             const isInline = !match && !className?.includes('hljs');
             if (isInline) {
               return <code className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[0.875em] font-medium text-primary" {...props}>{children}</code>;
@@ -46,16 +47,10 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
 
       {blocks?.map((block) => {
         if (block.type === 'callout') {
-          const tone = block.tone ?? 'info';
-          const Icon = calloutIcons[tone];
           return (
-            <div key={block.id} className={cn('my-8 rounded-3xl border p-5', calloutStyles[tone])}>
-              <div className="mb-2 flex items-center gap-2 font-medium">
-                <Icon className="h-4 w-4" />
-                {block.title}
-              </div>
-              <p className="m-0 text-sm leading-7">{block.content}</p>
-            </div>
+            <Callout key={block.id} tone={block.tone as any} title={block.title}>
+              {block.content}
+            </Callout>
           );
         }
 

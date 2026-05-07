@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -13,13 +13,35 @@ interface Question {
 }
 
 interface QuizTakerProps {
-  questions: Question[];
+  questions?: Question[];
+  slug?: string;
 }
 
-export function QuizTaker({ questions }: QuizTakerProps) {
+export function QuizTaker({ questions: initialQuestions, slug }: QuizTakerProps) {
+  const [questions, setQuestions] = useState<Question[] | null>(initialQuestions || null);
+  const [loading, setLoading] = useState(!!slug && !initialQuestions);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    if (slug && !initialQuestions) {
+      const fetchQuiz = async () => {
+        try {
+          const response = await fetch(`/api/quizzes/${slug}`);
+          if (response.ok) {
+            const data = await response.json();
+            setQuestions(data.questions);
+          }
+        } catch (error) {
+          console.error('Failed to fetch quiz:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchQuiz();
+    }
+  }, [slug, initialQuestions]);
 
   const handleSelect = (questionId: string, optionIndex: number) => {
     if (submitted) return;
@@ -27,6 +49,7 @@ export function QuizTaker({ questions }: QuizTakerProps) {
   };
 
   const handleSubmit = () => {
+    if (!questions) return;
     let newScore = 0;
     questions.forEach((q) => {
       if (answers[q.id] === q.answerIndex) {
@@ -36,6 +59,19 @@ export function QuizTaker({ questions }: QuizTakerProps) {
     setScore(newScore);
     setSubmitted(true);
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-32 items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          Loading interactive quiz...
+        </div>
+      </div>
+    );
+  }
+
+  if (!questions) return null;
 
   return (
     <div className="space-y-6">
