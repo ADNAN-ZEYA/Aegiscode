@@ -18,3 +18,16 @@ export const courseSchema = z.object({
 });
 
 export type CourseInput = z.infer<typeof courseSchema>;
+
+export const moduleSchema = z.object({
+  courseSlug: z.string().min(3),
+  id: z.string().min(2),
+  title: z.string().min(5),
+  slug: z.string().min(3),
+  summary: z.string().min(10),
+  markdown: z.string().min(50),
+  order: z.coerce.number().min(1),
+  estimatedMinutes: z.coerce.number().min(1),
+});
+
+export type ModuleInput = z.infer<typeof moduleSchema>;
