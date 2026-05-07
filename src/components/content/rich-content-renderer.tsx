@@ -17,8 +17,7 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
         remarkPlugins={[remarkGfm]} 
         rehypePlugins={[rehypeHighlight, rehypeSlug]}
         components={{
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          pre: ({ node, ...props }) => <CodeBlock {...props} />,
+          pre: ({ children }) => <>{children}</>,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           code: ({ node, className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || '');
@@ -32,7 +31,7 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
 
             // Interactive Callout Shortcode: ```callout:tone content-here ```
             if (lang.startsWith('callout:')) {
-              const tone = lang.split(':')[1] as 'info' | 'warning' | 'success';
+              const tone = lang.split(':')[1] as 'info' | 'warning' | 'success' | 'tip';
               return <Callout tone={tone}>{children}</Callout>;
             }
 
@@ -50,7 +49,9 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
             if (isInline) {
               return <code className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[0.875em] font-medium text-primary" {...props}>{children}</code>;
             }
-            return <code className={className} {...props}>{children}</code>;
+            
+            // Standard Code Block
+            return <CodeBlock className={className} {...props}>{children}</CodeBlock>;
           }
         }}
       >
