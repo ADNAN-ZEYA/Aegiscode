@@ -14,6 +14,7 @@ export interface CourseModule {
 export interface Course extends AuditFields {
   title: string;
   excerpt: string;
+  status: 'draft' | 'published' | 'archived';
   coverImage?: string;
   categorySlug: string;
   level: 'beginner' | 'intermediate' | 'advanced';

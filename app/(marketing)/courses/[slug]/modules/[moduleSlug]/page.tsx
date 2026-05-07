@@ -3,6 +3,7 @@ import { buildMetadata } from '@/lib/seo';
 import { getCourseBySlug } from '@/services/course.service';
 import { ReadingProgress } from '@/components/content/reading-progress';
 import { RichContentRenderer } from '@/components/content/rich-content-renderer';
+import { getServerUserProfile } from '@/lib/auth';
 
 export async function generateMetadata({
   params,
@@ -31,6 +32,14 @@ export default async function CourseModulePage({
 
   if (!course || !courseModule) {
     notFound();
+  }
+
+  // Security Check: Only admins can see non-published content
+  if (course.status !== 'published') {
+    const user = await getServerUserProfile();
+    if (user?.role !== 'admin') {
+      notFound();
+    }
   }
 
   return (
