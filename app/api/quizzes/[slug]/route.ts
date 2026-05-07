@@ -15,11 +15,12 @@ export async function GET(
     }
 
     // Security Check: 
-    // Public users can only see published quizzes.
-    // Admins can see everything (draft, archived, etc.)
-    const isPublished = quiz.status === 'published';
+    // 1. Published and Archived quizzes are visible to everyone 
+    //    (Archived means hidden from listings but usable in courses).
+    // 2. Draft quizzes are ONLY visible to Admins.
+    const isPubliclyAvailable = quiz.status === 'published' || quiz.status === 'archived';
     
-    if (!isPublished) {
+    if (!isPubliclyAvailable) {
       const user = await getServerUserProfile();
       const isAdmin = user?.role === 'admin';
 

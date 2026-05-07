@@ -23,18 +23,26 @@ export function QuizTaker({ questions: initialQuestions, slug }: QuizTakerProps)
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (slug && !initialQuestions) {
       const fetchQuiz = async () => {
         try {
           const response = await fetch(`/api/quizzes/${slug}`);
+          const data = await response.json();
           if (response.ok) {
-            const data = await response.json();
             setQuestions(data.questions);
+          } else if (response.status === 403) {
+            setError('This quiz is currently unavailable (Draft mode).');
+          } else if (response.status === 404) {
+            setError('This quiz could not be found.');
+          } else {
+            setError(data.error || 'Failed to load quiz');
           }
         } catch (error) {
           console.error('Failed to fetch quiz:', error);
+          setError('An unexpected error occurred while loading the quiz.');
         } finally {
           setLoading(false);
         }
@@ -67,6 +75,15 @@ export function QuizTaker({ questions: initialQuestions, slug }: QuizTakerProps)
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           Loading interactive quiz...
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-32 flex-col items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/5 px-6 text-center">
+        <p className="text-sm font-medium text-destructive">{error}</p>
+        <p className="mt-1 text-xs text-muted-foreground">Contact your administrator if you believe this is an error.</p>
       </div>
     );
   }
