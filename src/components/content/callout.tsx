@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { AlertTriangle, CheckCircle2, Info, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,8 +37,12 @@ export function Callout({
         <Icon className="h-4 w-4" />
         {title || tone.charAt(0).toUpperCase() + tone.slice(1)}
       </div>
-      <div className="text-sm leading-7 prose-p:my-0">
-        {children}
+      <div className="text-sm leading-7 prose-p:my-0 prose-a:text-current prose-a:underline">
+        {typeof children === 'string' ? (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{children}</ReactMarkdown>
+        ) : (
+          children
+        )}
       </div>
     </div>
   );
