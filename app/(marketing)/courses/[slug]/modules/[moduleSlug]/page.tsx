@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { buildMetadata } from '@/lib/seo';
-import { getCourseBySlug } from '@/services/course.service';
+import { getCourseBySlug, getCourseModule } from '@/services/course.service';
 import { ReadingProgress } from '@/components/content/reading-progress';
 import { RichContentRenderer } from '@/components/content/rich-content-renderer';
 import { getServerUserProfile } from '@/lib/auth';
@@ -11,8 +11,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string; moduleSlug: string }>;
 }) {
   const { slug, moduleSlug } = await params;
-  const course = await getCourseBySlug(slug);
-  const courseModule = course?.modules.find((item) => item.slug === moduleSlug);
+  const [course, courseModule] = await Promise.all([
+    getCourseBySlug(slug),
+    getCourseModule(slug, moduleSlug)
+  ]);
 
   return buildMetadata({
     title: courseModule ? `${courseModule.title} | ${course?.title}` : 'Course module not found',
@@ -27,8 +29,10 @@ export default async function CourseModulePage({
   params: Promise<{ slug: string; moduleSlug: string }>;
 }) {
   const { slug, moduleSlug } = await params;
-  const course = await getCourseBySlug(slug);
-  const courseModule = course?.modules.find((item) => item.slug === moduleSlug);
+  const [course, courseModule] = await Promise.all([
+    getCourseBySlug(slug),
+    getCourseModule(slug, moduleSlug)
+  ]);
 
   if (!course || !courseModule) {
     notFound();

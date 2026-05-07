@@ -122,40 +122,65 @@ export async function saveCourseAction(input: CourseInput) {
   const now = new Date().toISOString();
   const modules = JSON.parse(parsed.modulesJson);
 
-  await adminDb.collection('courses').doc(parsed.slug).set(
-    {
-      title: parsed.title,
-      excerpt: parsed.excerpt,
-      categorySlug: parsed.categorySlug,
-      level: parsed.level,
-      estimatedHours: parsed.estimatedHours,
-      tags: parsed.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
-      status: parsed.status,
-      slug: parsed.slug,
-      createdBy: admin.uid,
-      createdAt: now,
-      updatedAt: now,
-      publishedAt: parsed.status === 'published' ? now : null,
-      viewCount: 0,
-      enrolledCount: 0,
-      coverImage: parsed.coverImage || null,
-      courseFolder: parsed.courseFolder,
-      sourcePdfPath: parsed.sourcePdfPath,
-      modules,
-      isPremium: parsed.isPremium,
-      price: parsed.isPremium ? parsed.price ?? 0 : null,
-      author: {
-        id: admin.uid,
-        name: admin.name,
-        username: admin.username,
-      },
-      seo: {
-        title: parsed.title,
-        description: parsed.excerpt,
-      },
+  // Use a batch to save the course and all modules atomically
+  const batch = adminDb.batch();
+  const courseRef = adminDb.collection('courses').doc(parsed.slug);
+
+  // 1. Prepare the module summaries (metadata only, no heavy markdown)
+  const moduleSummaries = modules.map((m: any) => ({
+    id: m.id,
+    title: m.title,
+    slug: m.slug,
+    summary: m.summary,
+    order: m.order,
+    estimatedMinutes: m.estimatedMinutes,
+  }));
+
+  // 2. Set the main course document
+  batch.set(courseRef, {
+    title: parsed.title,
+    excerpt: parsed.excerpt,
+    categorySlug: parsed.categorySlug,
+    level: parsed.level,
+    estimatedHours: parsed.estimatedHours,
+    tags: parsed.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+    status: parsed.status,
+    slug: parsed.slug,
+    createdBy: admin.uid,
+    createdAt: now,
+    updatedAt: now,
+    publishedAt: parsed.status === 'published' ? now : null,
+    viewCount: 0,
+    enrolledCount: 0,
+    coverImage: parsed.coverImage || null,
+    courseFolder: parsed.courseFolder,
+    sourcePdfPath: parsed.sourcePdfPath,
+    modules: moduleSummaries, // Only summaries here!
+    isPremium: parsed.isPremium,
+    price: parsed.isPremium ? parsed.price ?? 0 : null,
+    author: {
+      id: admin.uid,
+      name: admin.name,
+      username: admin.username,
     },
-    { merge: true },
-  );
+    seo: {
+      title: parsed.title,
+      description: parsed.excerpt,
+    },
+  }, { merge: true });
+
+  // 3. Save each module to the sub-collection
+  modules.forEach((m: any) => {
+    const moduleRef = courseRef.collection('modules').doc(m.slug);
+    batch.set(moduleRef, {
+      ...m,
+      courseId: parsed.slug,
+      updatedAt: now,
+      createdAt: now,
+    }, { merge: true });
+  });
+
+  await batch.commit();
 
   revalidatePath('/courses');
   revalidatePath(`/courses/${parsed.slug}`);
