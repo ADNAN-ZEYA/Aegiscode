@@ -1,7 +1,7 @@
 import { getCourseBySlug } from '@/services/course.service';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit2, ArrowLeft } from 'lucide-react';
 
@@ -70,7 +70,7 @@ export default async function AdminCourseModulesPage({
                     {module.estimatedMinutes} min
                   </span>
                   <Link href={`/admin/courses/${slug}/modules/${module.slug}`}>
-                    <Button variant="ghost" size="icon" className="group-hover:text-primary">
+                    <Button variant="ghost" size="sm" className="group-hover:text-primary h-9 w-9 p-0">
                       <Edit2 size={18} />
                     </Button>
                   </Link>
