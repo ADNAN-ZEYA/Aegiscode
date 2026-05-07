@@ -18,8 +18,8 @@ export function ProgressCheck({ content }: { content: string }) {
     const parsed: MilestoneItem[] = [];
 
     lines.forEach(line => {
-      // Try List Mode: - [id] text
-      const listMatch = line.match(/^[-*]\s*\[([^\]]+)\]\s*(.+)$/);
+      // Try List Mode: - [id] text or * [id] text
+      const listMatch = line.match(/^[\s\-\*]*\[([^\]]+)\]\s*(.+)$/);
       if (listMatch) {
         parsed.push({ id: listMatch[1].trim(), text: listMatch[2].trim() });
       } else {

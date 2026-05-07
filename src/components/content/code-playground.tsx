@@ -51,7 +51,7 @@ export function CodePlayground({ code: initialCode }: { code: string }) {
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="h-[300px] w-full resize-none bg-slate-950 p-4 font-mono text-sm text-slate-100 outline-none"
+            className="h-[300px] w-full resize-none bg-[hsl(var(--code-bg))] p-4 font-mono text-sm text-[hsl(var(--code-foreground))] outline-none"
             spellCheck={false}
           />
         </div>
