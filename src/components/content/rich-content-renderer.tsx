@@ -6,6 +6,8 @@ import rehypeSlug from 'rehype-slug';
 import { QuizTaker } from '../quiz/quiz-taker';
 import { Callout } from './callout';
 import { CodeBlock } from './code-block';
+import { CodePlayground } from './code-playground';
+import { ProgressCheck } from './progress-check';
 import type { ContentBlock } from '@/types/content';
 
 export function RichContentRenderer({ markdown, blocks }: { markdown: string; blocks?: ContentBlock[] }) {
@@ -30,8 +32,23 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
 
             // Interactive Callout Shortcode: ```callout:tone content-here ```
             if (lang.startsWith('callout:')) {
-              const tone = lang.split(':')[1] as any;
+              const tone = lang.split(':')[1] as 'info' | 'warning' | 'success';
               return <Callout tone={tone}>{children}</Callout>;
+            }
+
+            // Live Code Playground: ```playground html-here ```
+            if (lang === 'playground') {
+              return <CodePlayground code={String(children)} />;
+            }
+
+            // Progress Milestone: ```progress id:1 text:Setup ```
+            if (lang === 'progress') {
+              const content = String(children);
+              const idMatch = content.match(/id:\s*([^\n]+)/);
+              const textMatch = content.match(/text:\s*([^\n]+)/);
+              const id = idMatch ? idMatch[1].trim() : 'default';
+              const text = textMatch ? textMatch[1].trim() : 'Complete this step';
+              return <ProgressCheck id={id} text={text} />;
             }
 
             const isInline = !match && !className?.includes('hljs');
@@ -48,7 +65,7 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
       {blocks?.map((block) => {
         if (block.type === 'callout') {
           return (
-            <Callout key={block.id} tone={block.tone as any} title={block.title}>
+            <Callout key={block.id} tone={block.tone as 'info' | 'warning' | 'success'} title={block.title}>
               {block.content}
             </Callout>
           );
