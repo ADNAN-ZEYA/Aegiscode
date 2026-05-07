@@ -4,6 +4,7 @@ import { buildMetadata } from '@/lib/seo';
 import { getCourseBySlug } from '@/services/course.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getServerUserProfile } from '@/lib/auth';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -23,6 +24,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
   if (!course) {
     notFound();
+  }
+
+  // Security Check: Only admins can see non-published content
+  if (course.status !== 'published') {
+    const user = await getServerUserProfile();
+    if (user?.role !== 'admin') {
+      notFound();
+    }
   }
 
   return (
