@@ -6,6 +6,7 @@ import { ViewTracker } from '@/components/content/view-tracker';
 import { buildMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
 import { getBlogBySlug, getBasicContentBySlugs } from '@/services/content.service';
+import { getServerUserProfile } from '@/lib/auth';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -32,6 +33,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   if (!post) {
     notFound();
+  }
+
+  // Security Check: Only admins can see non-published content
+  if (post.status !== 'published') {
+    const user = await getServerUserProfile();
+    if (user?.role !== 'admin') {
+      notFound();
+    }
   }
 
   const [prerequisites, related] = await Promise.all([
