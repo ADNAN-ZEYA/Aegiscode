@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth';
 import { adminDb } from '@/lib/firebase/admin';
 import { contentSchema, quizSchema, type ContentInput, type QuizInput } from '@/features/admin/schemas';
 import { courseSchema, type CourseInput } from '@/features/admin/course-schemas';
+import type { CourseModule } from '@/types/course';
 
 export async function saveContentAction(input: ContentInput) {
   const admin = await requireAdmin();
@@ -120,14 +121,14 @@ export async function saveCourseAction(input: CourseInput) {
   }
 
   const now = new Date().toISOString();
-  const modules = JSON.parse(parsed.modulesJson);
+  const modules = JSON.parse(parsed.modulesJson) as CourseModule[];
 
   // Use a batch to save the course and all modules atomically
   const batch = adminDb.batch();
   const courseRef = adminDb.collection('courses').doc(parsed.slug);
 
   // 1. Prepare the module summaries (metadata only, no heavy markdown)
-  const moduleSummaries = modules.map((m: any) => ({
+  const moduleSummaries = modules.map((m) => ({
     id: m.id,
     title: m.title,
     slug: m.slug,
@@ -170,7 +171,7 @@ export async function saveCourseAction(input: CourseInput) {
   }, { merge: true });
 
   // 3. Save each module to the sub-collection
-  modules.forEach((m: any) => {
+  modules.forEach((m) => {
     const moduleRef = courseRef.collection('modules').doc(m.slug);
     batch.set(moduleRef, {
       ...m,
