@@ -41,14 +41,9 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
               return <CodePlayground code={String(children)} />;
             }
 
-            // Progress Milestone: ```progress id:1 text:Setup ```
+            // Progress Milestone: ```progress id:1 text:Setup ``` or list mode
             if (lang === 'progress') {
-              const content = String(children);
-              const idMatch = content.match(/id:\s*([^\n]+)/);
-              const textMatch = content.match(/text:\s*([^\n]+)/);
-              const id = idMatch ? idMatch[1].trim() : 'default';
-              const text = textMatch ? textMatch[1].trim() : 'Complete this step';
-              return <ProgressCheck id={id} text={text} />;
+              return <ProgressCheck content={String(children)} />;
             }
 
             const isInline = !match && !className?.includes('hljs');
