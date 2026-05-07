@@ -1,6 +1,6 @@
 import { adminDb } from '@/lib/firebase/admin';
 
-import type { Course } from '@/types/course';
+import type { Course, CourseModule } from '@/types/course';
 
 export async function listCourses({
   query,
@@ -70,7 +70,7 @@ export async function getCourseModule(courseSlug: string, moduleSlug: string) {
       .get();
     
     if (snapshot.exists) {
-      return { ...snapshot.data(), slug: moduleSlug };
+      return { ...(snapshot.data() as CourseModule), slug: moduleSlug };
     }
   }
 
