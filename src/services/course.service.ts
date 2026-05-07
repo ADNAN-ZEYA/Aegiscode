@@ -59,3 +59,20 @@ export async function getCourseBySlug(slug: string) {
 
   return null;
 }
+
+export async function getCourseModule(courseSlug: string, moduleSlug: string) {
+  if (adminDb) {
+    const snapshot = await adminDb
+      .collection('courses')
+      .doc(courseSlug)
+      .collection('modules')
+      .doc(moduleSlug)
+      .get();
+    
+    if (snapshot.exists) {
+      return { ...snapshot.data(), slug: moduleSlug };
+    }
+  }
+
+  return null;
+}
