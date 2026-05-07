@@ -29,6 +29,7 @@ export interface ContentAttachment {
 export interface BaseContent extends AuditFields {
   title: string;
   excerpt: string;
+  status: 'draft' | 'published' | 'archived';
   coverImage?: string;
   categorySlug: string;
   readingTime: number;

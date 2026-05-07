@@ -6,6 +6,7 @@ import { ViewTracker } from '@/components/content/view-tracker';
 import { buildMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
 import { getStudyMaterialBySlug, getBasicContentBySlugs } from '@/services/content.service';
+import { getServerUserProfile } from '@/lib/auth';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -29,6 +30,14 @@ export default async function StudyMaterialPage({ params }: { params: Promise<{ 
 
   if (!material) {
     notFound();
+  }
+
+  // Security Check: Only admins can see non-published content
+  if (material.status !== 'published') {
+    const user = await getServerUserProfile();
+    if (user?.role !== 'admin') {
+      notFound();
+    }
   }
 
   const [prerequisites, related] = await Promise.all([
