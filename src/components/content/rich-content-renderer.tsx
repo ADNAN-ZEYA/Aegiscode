@@ -2,6 +2,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeSlug from 'rehype-slug';
 import { AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ContentBlock } from '@/types/content';
@@ -25,7 +26,7 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
     <div className="prose prose-base md:prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-a:text-primary dark:prose-invert prose-pre:p-0 prose-pre:bg-transparent">
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]} 
-        rehypePlugins={[rehypeHighlight]}
+        rehypePlugins={[rehypeHighlight, rehypeSlug]}
         components={{
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           pre: ({ node, ...props }) => <CodeBlock {...props} />,

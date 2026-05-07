@@ -19,20 +19,26 @@ const starterQuestions = `[
   }
 ]`;
 
-export function QuizForm({ onSubmit }: { onSubmit?: (input: QuizInput) => Promise<unknown> | unknown }) {
+export function QuizForm({ 
+  onSubmit, 
+  initialValues 
+}: { 
+  onSubmit?: (input: QuizInput) => Promise<unknown> | unknown;
+  initialValues?: Partial<QuizInput>;
+}) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<QuizInput>({
     resolver: zodResolver(quizSchema),
     defaultValues: {
-      title: '',
-      slug: '',
-      excerpt: '',
-      categorySlug: '',
-      difficulty: 'beginner',
-      durationMinutes: 10,
-      status: 'draft',
-      questionsJson: starterQuestions,
+      title: initialValues?.title || '',
+      slug: initialValues?.slug || '',
+      excerpt: initialValues?.excerpt || '',
+      categorySlug: initialValues?.categorySlug || '',
+      difficulty: initialValues?.difficulty || 'beginner',
+      durationMinutes: initialValues?.durationMinutes || 10,
+      status: initialValues?.status || 'draft',
+      questionsJson: initialValues?.questionsJson || starterQuestions,
     },
   });
 

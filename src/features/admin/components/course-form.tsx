@@ -22,26 +22,32 @@ const starterModules = `[
   }
 ]`;
 
-export function CourseForm({ onSubmit }: { onSubmit?: (input: CourseInput) => Promise<unknown> | unknown }) {
+export function CourseForm({ 
+  onSubmit, 
+  initialValues 
+}: { 
+  onSubmit?: (input: CourseInput) => Promise<unknown> | unknown;
+  initialValues?: Partial<CourseInput>;
+}) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<CourseInput>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
-      title: '',
-      slug: '',
-      excerpt: '',
-      categorySlug: '',
-      level: 'beginner',
-      estimatedHours: 10,
-      tags: 'course, engineering',
-      status: 'draft',
-      courseFolder: 'courses/course-slug',
-      sourcePdfPath: 'courses/course-slug/master-source.pdf',
-      modulesJson: starterModules,
-      coverImage: '',
-      isPremium: false,
-      price: 0,
+      title: initialValues?.title || '',
+      slug: initialValues?.slug || '',
+      excerpt: initialValues?.excerpt || '',
+      categorySlug: initialValues?.categorySlug || '',
+      level: initialValues?.level || 'beginner',
+      estimatedHours: initialValues?.estimatedHours || 10,
+      tags: initialValues?.tags || 'course, engineering',
+      status: initialValues?.status || 'draft',
+      courseFolder: initialValues?.courseFolder || 'courses/course-slug',
+      sourcePdfPath: initialValues?.sourcePdfPath || 'courses/course-slug/master-source.pdf',
+      modulesJson: initialValues?.modulesJson || starterModules,
+      coverImage: initialValues?.coverImage || '',
+      isPremium: initialValues?.isPremium || false,
+      price: initialValues?.price || 0,
     },
   });
 
