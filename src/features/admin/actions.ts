@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { adminDb } from '@/lib/firebase/admin';
 import { contentSchema, quizSchema, type ContentInput, type QuizInput } from '@/features/admin/schemas';
-import { courseSchema, type CourseInput } from '@/features/admin/course-schemas';
-import type { CourseModule } from '@/types/course';
+import { courseSchema, moduleSchema, type CourseInput, type ModuleInput } from '@/features/admin/course-schemas';
+import type { CourseModule, Course } from '@/types/course';
 
 export async function saveContentAction(input: ContentInput) {
   const admin = await requireAdmin();
@@ -188,4 +188,67 @@ export async function saveCourseAction(input: CourseInput) {
   revalidatePath('/admin/courses');
 
   return { ok: true, message: 'Course saved successfully.' };
+}
+
+export async function saveModuleAction(input: ModuleInput) {
+  await requireAdmin();
+  const parsed = moduleSchema.parse(input);
+
+  if (!adminDb) {
+    return { ok: false, message: 'Firebase Admin is not configured yet.' };
+  }
+
+  const now = new Date().toISOString();
+  const courseRef = adminDb.collection('courses').doc(parsed.courseSlug);
+  const moduleRef = courseRef.collection('modules').doc(parsed.slug);
+
+  // 1. Save the full module content
+  await moduleRef.set({
+    id: parsed.id,
+    title: parsed.title,
+    slug: parsed.slug,
+    summary: parsed.summary,
+    markdown: parsed.markdown,
+    order: parsed.order,
+    estimatedMinutes: parsed.estimatedMinutes,
+    updatedAt: now,
+    courseId: parsed.courseSlug,
+  }, { merge: true });
+
+  // 2. Synchronize with the parent course document (Summary only)
+  const courseDoc = await courseRef.get();
+  if (courseDoc.exists) {
+    const courseData = courseDoc.data() as Course;
+    const currentModules = courseData.modules || [];
+    
+    // Replace or add the module summary
+    const newModuleSummary = {
+      id: parsed.id,
+      title: parsed.title,
+      slug: parsed.slug,
+      summary: parsed.summary,
+      order: parsed.order,
+      estimatedMinutes: parsed.estimatedMinutes,
+    };
+
+    const index = currentModules.findIndex(m => m.id === parsed.id || m.slug === parsed.slug);
+    const updatedModules = [...currentModules];
+    
+    if (index >= 0) {
+      updatedModules[index] = newModuleSummary;
+    } else {
+      updatedModules.push(newModuleSummary);
+    }
+
+    await courseRef.update({
+      modules: updatedModules,
+      updatedAt: now
+    });
+  }
+
+  revalidatePath(`/courses/${parsed.courseSlug}`);
+  revalidatePath(`/courses/${parsed.courseSlug}/modules/${parsed.slug}`);
+  revalidatePath('/admin/courses');
+
+  return { ok: true, message: 'Module saved and synchronized successfully.' };
 }
