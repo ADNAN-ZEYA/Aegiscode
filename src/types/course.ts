@@ -1,14 +1,17 @@
 import type { AuditFields, AuthorRef, SeoFields } from '@/types/common';
 
-export interface CourseModule {
+export interface CourseModuleSummary {
   id: string;
   title: string;
   slug: string;
   summary: string;
-  markdown: string;
   order: number;
-  sourcePdfPath?: string;
   estimatedMinutes: number;
+}
+
+export interface CourseModule extends CourseModuleSummary {
+  markdown: string;
+  sourcePdfPath?: string;
 }
 
 export interface Course extends AuditFields {
@@ -23,7 +26,7 @@ export interface Course extends AuditFields {
   featured?: boolean;
   author: AuthorRef;
   seo: SeoFields;
-  modules: CourseModule[];
+  modules: CourseModuleSummary[]; // Using Summary here!
   courseFolder: string;
   sourcePdfPath?: string;
   isPremium: boolean;
