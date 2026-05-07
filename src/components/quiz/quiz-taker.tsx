@@ -109,7 +109,7 @@ export function QuizTaker({ questions: initialQuestions, slug }: QuizTakerProps)
             <Card key={question.id}>
               <CardHeader>
                 <CardTitle className="text-xl">
-                  {index + 1}. {question.prompt}
+                  {index + 1}. {question.prompt || (question as any).question}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
