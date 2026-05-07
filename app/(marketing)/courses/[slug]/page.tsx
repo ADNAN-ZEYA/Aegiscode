@@ -59,7 +59,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         </Card>
 
         <div className="space-y-4">
-          {course.modules
+          {[...(course.modules || [])]
             .sort((left, right) => left.order - right.order)
             .map((module) => (
               <Card key={module.id}>
