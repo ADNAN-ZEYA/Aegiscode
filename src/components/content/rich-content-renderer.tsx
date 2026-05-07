@@ -20,7 +20,8 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
           pre: ({ children }) => <>{children}</>,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           code: ({ node, className, children, ...props }: any) => {
-            const match = /language-(\w+)/.exec(className || '');
+            console.log("language received:", className);
+            const match = /language-([^\s]+)/.exec(className || '');
             const lang = match ? match[1] : '';
 
             // Interactive Quiz Shortcode: ```quiz slug-here ```
