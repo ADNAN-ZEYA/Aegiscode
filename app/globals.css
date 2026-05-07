@@ -18,7 +18,7 @@
   --border: 155 18% 88%;
   --input: 155 18% 88%;
   --ring: 160 84% 32%;
-  --code-bg: 155 15% 95%;
+  --code-bg: 240 5% 96%;
   --code-foreground: 222 47% 11%;
 }
 
@@ -38,7 +38,7 @@
   --border: 240 5% 15%;
   --input: 240 5% 15%;
   --ring: 250 89% 65%;
-  --code-bg: 240 5% 4%;
+  --code-bg: 240 10% 4%;
   --code-foreground: 0 0% 98%;
 }
 
