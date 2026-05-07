@@ -28,27 +28,27 @@ export function CodeBlock({ children, className, ...props }: React.HTMLAttribute
   };
 
   return (
-    <div className="group relative my-8 overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c14] shadow-xl">
-      <div className="flex h-10 w-full items-center justify-between border-b border-white/5 bg-white/[0.02] px-4">
+    <div className="group relative my-8 overflow-hidden rounded-2xl border border-border bg-[hsl(var(--code-bg))] shadow-xl transition-colors">
+      <div className="flex h-10 w-full items-center justify-between border-b border-border bg-muted/30 px-4">
         <div className="flex gap-1.5">
-          <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
-          <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
-          <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
+          <div className="h-2.5 w-2.5 rounded-full bg-border" />
+          <div className="h-2.5 w-2.5 rounded-full bg-border" />
+          <div className="h-2.5 w-2.5 rounded-full bg-border" />
         </div>
         <button
           onClick={copyToClipboard}
-          className="flex h-6 w-6 items-center justify-center rounded-md text-white/30 transition hover:bg-white/10 hover:text-white"
+          className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
           aria-label="Copy code"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
       </div>
       <div className="relative">
-        <pre className={`max-h-[60vh] overflow-x-auto overflow-y-auto p-5 text-sm leading-relaxed text-slate-100 ${className || ''}`} {...props}>
+        <pre className={`max-h-[60vh] overflow-x-auto overflow-y-auto p-5 text-sm leading-relaxed text-[hsl(var(--code-foreground))] ${className || ''}`} {...props}>
           {children}
         </pre>
         {/* Mobile Scroll Hint Gradient */}
-        <div className="pointer-events-none absolute bottom-0 right-0 top-0 w-8 bg-gradient-to-l from-[#0c0c14] to-transparent opacity-0 transition-opacity md:hidden" />
+        <div className="pointer-events-none absolute bottom-0 right-0 top-0 w-8 bg-gradient-to-l from-[hsl(var(--code-bg))] to-transparent opacity-0 transition-opacity md:hidden" />
       </div>
     </div>
   );

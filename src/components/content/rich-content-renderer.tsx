@@ -42,7 +42,7 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
             }
 
             // Progress Milestone: ```progress id:1 text:Setup ``` or list mode
-            if (lang === 'progress') {
+            if (lang.startsWith('progress')) {
               return <ProgressCheck content={String(children)} />;
             }
 
