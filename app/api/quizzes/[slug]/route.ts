@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getQuizBySlug } from '@/services/quiz.service';
+import { getServerUserProfile } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
@@ -11,6 +12,20 @@ export async function GET(
 
     if (!quiz) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
+    }
+
+    // Security Check: 
+    // Public users can only see published quizzes.
+    // Admins can see everything (draft, archived, etc.)
+    const isPublished = quiz.status === 'published';
+    
+    if (!isPublished) {
+      const user = await getServerUserProfile();
+      const isAdmin = user?.role === 'admin';
+
+      if (!isAdmin) {
+        return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
+      }
     }
 
     // Return only public data
