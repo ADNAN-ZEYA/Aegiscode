@@ -10,14 +10,21 @@ export const dynamic = 'force-dynamic';
 async function getHistory() {
   if (!adminDb) return [];
   
-  const snapshot = await adminDb.collection('content').orderBy('createdAt', 'desc').limit(40).get();
+  const [contentSnap, coursesSnap, quizzesSnap] = await Promise.all([
+    adminDb.collection('content').orderBy('createdAt', 'desc').limit(20).get(),
+    adminDb.collection('courses').orderBy('createdAt', 'desc').limit(20).get(),
+    adminDb.collection('quizzes').orderBy('createdAt', 'desc').limit(20).get(),
+  ]);
 
-  const items = snapshot.docs.map(d => ({ 
-    id: d.id, 
-    contentType: d.data().type || 'blog', 
-    ...d.data() 
-  }));
+  const items = [
+    ...contentSnap.docs.map(d => ({ id: d.id, contentType: d.data().type || 'blog', ...d.data() })),
+    ...coursesSnap.docs.map(d => ({ id: d.id, contentType: 'course', ...d.data() })),
+    ...quizzesSnap.docs.map(d => ({ id: d.id, contentType: 'quiz', ...d.data() })),
+  ];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  items.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  
   return items;
 }
 
