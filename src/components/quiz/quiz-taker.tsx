@@ -87,7 +87,6 @@ export function QuizTaker({ questions: initialQuestions, slug }: QuizTakerProps)
       <div className="space-y-4">
         {questions.map((question, index) => {
           const selectedOptionIndex = answers[question.id];
-          const isCorrect = selectedOptionIndex === question.answerIndex;
           
           return (
             <Card key={question.id}>

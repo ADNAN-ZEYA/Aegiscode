@@ -5,8 +5,6 @@ import { ContentForm } from '@/features/admin/components/content-form';
 import { QuizForm } from '@/features/admin/components/quiz-form';
 import { CourseForm } from '@/features/admin/components/course-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ContentInput, QuizInput } from '@/features/admin/schemas';
-import type { CourseInput } from '@/features/admin/course-schemas';
 
 export const dynamic = 'force-dynamic';
 
