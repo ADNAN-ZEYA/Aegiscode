@@ -11,6 +11,7 @@ export interface QuizQuestion {
 export interface Quiz extends AuditFields {
   title: string;
   excerpt: string;
+  status: 'draft' | 'published' | 'archived';
   categorySlug: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   durationMinutes: number;
