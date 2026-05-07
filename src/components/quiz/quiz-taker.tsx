@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 interface Question {
   id: string;
   prompt: string;
+  question?: string; // Fallback for older data
   options: string[];
   answerIndex: number;
   explanation?: string;
@@ -109,7 +110,7 @@ export function QuizTaker({ questions: initialQuestions, slug }: QuizTakerProps)
             <Card key={question.id}>
               <CardHeader>
                 <CardTitle className="text-xl">
-                  {index + 1}. {question.prompt || (question as any).question}
+                  {index + 1}. {question.prompt || question.question}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
