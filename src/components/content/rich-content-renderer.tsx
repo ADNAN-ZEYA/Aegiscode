@@ -12,7 +12,7 @@ import type { ContentBlock } from '@/types/content';
 
 export function RichContentRenderer({ markdown, blocks }: { markdown: string; blocks?: ContentBlock[] }) {
   return (
-    <div className="prose prose-base md:prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-a:text-primary dark:prose-invert prose-pre:p-0 prose-pre:bg-transparent">
+    <div className="prose prose-base md:prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-a:text-primary dark:prose-invert prose-pre:p-0 prose-pre:bg-transparent prose-code:before:content-none prose-code:after:content-none">
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]} 
         rehypePlugins={[rehypeHighlight, rehypeSlug]}
