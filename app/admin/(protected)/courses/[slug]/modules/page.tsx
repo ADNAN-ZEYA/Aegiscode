@@ -18,7 +18,7 @@ export default async function AdminCourseModulesPage({
   }
 
   // Use the summaries stored in the course document
-  const modules = [...(course.modules || [])].sort((a, b) => a.order - b.order);
+  const modules = [...(course.modules || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 
   return (
     <div className="space-y-8">
