@@ -44,7 +44,7 @@ export function CodeBlock({ children, className, ...props }: React.HTMLAttribute
         </button>
       </div>
       <div className="relative">
-        <pre className={`max-h-[60vh] overflow-x-auto overflow-y-auto p-5 text-sm leading-relaxed text-[hsl(var(--code-foreground))] ${className || ''}`} {...props}>
+        <pre className={`max-h-[60vh] overflow-x-auto overflow-y-auto p-5 text-sm leading-relaxed whitespace-pre text-[hsl(var(--code-foreground))] ${className || ''}`} {...props}>
           {children}
         </pre>
         {/* Mobile Scroll Hint Gradient */}
