@@ -13,8 +13,9 @@ export function ProgressCheck({ content }: { content: string }) {
   const [items, setItems] = useState<MilestoneItem[]>([]);
 
   useEffect(() => {
-    // Parse the content
-    const lines = content.split('\n').filter(line => line.trim() !== '');
+    // Parse the content - ensuring we handle literal \n if they escaped sanitization
+    const sanitizedContent = content.replace(/\\n/g, '\n');
+    const lines = sanitizedContent.split('\n').filter(line => line.trim() !== '');
     const parsed: MilestoneItem[] = [];
 
     lines.forEach(line => {
