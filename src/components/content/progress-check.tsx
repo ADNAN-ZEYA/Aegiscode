@@ -13,22 +13,20 @@ export function ProgressCheck({ content }: { content: string }) {
   const [items, setItems] = useState<MilestoneItem[]>([]);
 
   useEffect(() => {
-    // Parse the content - ensuring we handle literal \n if they escaped sanitization
-    const sanitizedContent = content.replace(/\\n/g, '\n');
-    const lines = sanitizedContent.split('\n').filter(line => line.trim() !== '');
+    // Split on both literal \n and actual newlines
+    const lines = content.split(/\\n|\n/).filter(line => line.trim().startsWith('-'));
     const parsed: MilestoneItem[] = [];
 
-    lines.forEach(line => {
-      // Try List Mode: - [id] text or * [id] text
-      const listMatch = line.match(/^[\s\-\*]*\[([^\]]+)\]\s*(.+)$/);
-      if (listMatch) {
-        parsed.push({ id: listMatch[1].trim(), text: listMatch[2].trim() });
-      } else {
-        // Try Key-Value Mode: id: xxx text: yyy
-        const idMatch = line.match(/id:\s*([^\s|]+)/);
-        const textMatch = line.match(/text:\s*(.+)$/);
-        if (idMatch && textMatch) {
-          parsed.push({ id: idMatch[1].trim(), text: textMatch[1].trim() });
+    lines.forEach((line, index) => {
+      // Extract text after the dash
+      const text = line.trim().substring(1).trim();
+      if (text) {
+        // Use the text or a hash as ID if no bracketed ID is found
+        const idMatch = text.match(/^\[([^\]]+)\]\s*(.+)$/);
+        if (idMatch) {
+          parsed.push({ id: idMatch[1].trim(), text: idMatch[2].trim() });
+        } else {
+          parsed.push({ id: `item-${index}`, text: text });
         }
       }
     });
