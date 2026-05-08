@@ -11,6 +11,10 @@ import { ProgressCheck } from './progress-check';
 import type { ContentBlock } from '@/types/content';
 
 export function RichContentRenderer({ markdown, blocks }: { markdown: string; blocks?: ContentBlock[] }) {
+  // Firestore sometimes saves newlines as literal \n strings. 
+  // We sanitize them to actual line breaks so the markdown parser respects them.
+  const sanitizedMarkdown = markdown?.replace(/\\n/g, '\n');
+
   return (
     <div className="prose prose-base md:prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-a:text-primary dark:prose-invert prose-pre:p-0 prose-pre:bg-transparent prose-code:before:content-none prose-code:after:content-none">
       <ReactMarkdown 
@@ -56,7 +60,7 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
           }
         }}
       >
-        {markdown}
+        {sanitizedMarkdown}
       </ReactMarkdown>
 
       {blocks?.map((block) => {
