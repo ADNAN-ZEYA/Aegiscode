@@ -4,14 +4,22 @@ import { revalidatePath } from 'next/cache';
 import { getServerUserProfile } from '@/lib/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export interface RoadmapResource {
+  type: 'aegiscode' | 'youtube' | 'gfg' | 'leetcode';
+  title: string;
+  url: string;
+}
+
 export interface RoadmapWeek {
   week: number;
   title: string;
   topics: string[];
+  resources?: RoadmapResource[];
+  dailyHours?: number;
 }
 
 export interface RoadmapData {
-  topic: string;
+  goal: string;
   title: string;
   targetDate: string;
   dailyHours: number;

@@ -2,27 +2,43 @@
 
 import { useState } from 'react';
 import {
+  BookOpen,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Circle,
+  Code,
+  ExternalLink,
   Loader2,
   Map,
+  Play,
   RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { saveRoadmap, markWeekComplete } from '../actions';
-import type { RoadmapData } from '../actions';
+import type { RoadmapData, RoadmapResource } from '../actions';
 
-const TOPICS = [
-  'DSA',
-  'Operating Systems',
-  'DBMS',
-  'Computer Networks',
-  'Web Development',
-  'System Design',
-];
+const RESOURCE_META: Record<
+  RoadmapResource['type'],
+  { label: string; icon: React.ElementType; className: string }
+> = {
+  aegiscode: { label: 'AegisCode', icon: BookOpen, className: 'text-primary bg-primary/10' },
+  youtube:   { label: 'YouTube',   icon: Play,     className: 'text-red-500 bg-red-500/10' },
+  gfg:       { label: 'GFG',       icon: Code,     className: 'text-green-600 bg-green-500/10' },
+  leetcode:  { label: 'LeetCode',  icon: Code,     className: 'text-orange-500 bg-orange-500/10' },
+};
+
+const SYSTEM_PROMPT = `You are a study roadmap generator for AegisCode, an educational platform. Based on the student's goal, create a personalized week-by-week study plan.
+
+For each week include:
+- Topics to cover
+- Specific AegisCode resources if relevant (DSA, OS, DBMS, Networks, Web Dev, System Design)
+- YouTube links for topics not on AegisCode
+- GFG/LeetCode links for practice problems
+
+Return response as JSON with this structure (no markdown, no code fences, only the raw JSON object):
+{"title":"string","totalWeeks":number,"weeks":[{"week":1,"title":"string","topics":["topic1","topic2"],"resources":[{"type":"aegiscode","title":"Resource title","url":"/study-materials/slug"},{"type":"youtube","title":"Video title","url":"https://youtube.com/..."},{"type":"leetcode","title":"Practice problems","url":"https://leetcode.com/..."}],"dailyHours":number}]}`;
 
 interface Props {
   initialRoadmap: RoadmapData | null;
@@ -35,7 +51,7 @@ export function RoadmapSection({ initialRoadmap }: Props) {
   const [error, setError] = useState('');
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
 
-  const [topic, setTopic] = useState('DSA');
+  const [goal, setGoal] = useState('');
   const [targetDate, setTargetDate] = useState('');
   const [dailyHours, setDailyHours] = useState(3);
 
@@ -44,6 +60,10 @@ export function RoadmapSection({ initialRoadmap }: Props) {
   const minDateStr = minDate.toISOString().split('T')[0];
 
   async function handleGenerate() {
+    if (!goal.trim()) {
+      setError('Please describe your learning goal.');
+      return;
+    }
     if (!targetDate) {
       setError('Please select a target completion date.');
       return;
@@ -61,27 +81,21 @@ export function RoadmapSection({ initialRoadmap }: Props) {
         ),
       );
 
-      const prompt = `You are a structured study roadmap generator for engineering students.
+      const userMessage = `${SYSTEM_PROMPT}
 
-Generate a ${weeks}-week study roadmap for the topic: ${topic}
-- Daily study time available: ${dailyHours} hour${dailyHours > 1 ? 's' : ''}
-- Start date: ${today}
-- Target completion: ${targetDate}
+Student goal: ${goal.trim()}
+Start date: ${today}
+Target completion: ${targetDate}
+Daily study hours: ${dailyHours}h/day
+Total weeks available: ${weeks}
 
-Respond with ONLY a valid JSON object — no markdown, no code fences, no explanation before or after:
-{"title":"string","totalWeeks":${weeks},"weeks":[{"week":1,"title":"string","topics":["specific topic 1","specific topic 2","specific topic 3","specific topic 4"]}]}
-
-Rules:
-- 3 to 5 specific, actionable topics per week
-- Progressive difficulty from foundations to advanced
-- Realistic for ${dailyHours}h/day
-- Week titles should be thematic (e.g. "Arrays & Recursion", not "Week 1")`;
+Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 relevant resources per week. Be specific and progressive.`;
 
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: 'user', content: userMessage }],
           pageContext: { title: 'Study Roadmap Generator', content: '' },
           isNewConversation: false,
         }),
@@ -89,10 +103,12 @@ Rules:
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error((data as { error?: string }).error || 'Failed to generate roadmap. Please try again.');
+        throw new Error(
+          (data as { error?: string }).error || 'Failed to generate roadmap. Please try again.',
+        );
       }
 
-      const data = await res.json() as { content: string };
+      const data = (await res.json()) as { content: string };
       let parsed: Partial<RoadmapData>;
 
       try {
@@ -110,8 +126,8 @@ Rules:
       }
 
       const newRoadmap: RoadmapData = {
-        topic,
-        title: parsed.title || `${topic} Study Roadmap`,
+        goal: goal.trim(),
+        title: parsed.title || `Study Roadmap`,
         targetDate,
         dailyHours,
         startDate: today,
@@ -141,6 +157,7 @@ Rules:
     await markWeekComplete(weekNumber, checked);
   }
 
+  // ── Form ────────────────────────────────────────────────────────────────────
   if (showForm) {
     return (
       <Card>
@@ -150,23 +167,22 @@ Rules:
             {roadmap ? 'Regenerate Roadmap' : 'Create Your Study Roadmap'}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Tell us what you want to learn and we&apos;ll build a personalised week-by-week plan.
+            Describe your goal and we&apos;ll build a week-by-week plan with curated resources.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium">What do you want to learn?</label>
-            <select
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {TOPICS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+            <label className="text-sm font-medium">What do you want to learn or achieve?</label>
+            <textarea
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder="e.g. I want to crack Amazon SDE interview, I want to learn web development, I want to clear GATE CS"
+              rows={3}
+              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <p className="text-xs text-muted-foreground">
+              Be specific — the more detail you give, the better your roadmap will be.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -229,6 +245,7 @@ Rules:
     );
   }
 
+  // ── Display ─────────────────────────────────────────────────────────────────
   if (!roadmap) return null;
 
   const completedCount = roadmap.completedWeeks?.length ?? 0;
@@ -252,6 +269,11 @@ Rules:
                 year: 'numeric',
               })}
             </p>
+            {roadmap.goal && (
+              <p className="mt-1.5 text-xs italic text-muted-foreground/70">
+                &ldquo;{roadmap.goal}&rdquo;
+              </p>
+            )}
           </div>
           <Button
             variant="outline"
@@ -285,13 +307,13 @@ Rules:
           {roadmap.weeks.map((week) => {
             const isCompleted = (roadmap.completedWeeks ?? []).includes(week.week);
             const isExpanded = expandedWeek === week.week;
+            const hasResources = (week.resources?.length ?? 0) > 0;
+
             return (
               <div
                 key={week.week}
                 className={`rounded-xl border transition-colors ${
-                  isCompleted
-                    ? 'border-primary/30 bg-primary/5'
-                    : 'border-border bg-muted/30'
+                  isCompleted ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/30'
                 }`}
               >
                 <div className="flex items-center gap-3 p-3">
@@ -306,7 +328,8 @@ Rules:
                       <Circle className="h-5 w-5 text-muted-foreground" />
                     )}
                   </button>
-                  <div className="flex-1 min-w-0">
+
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         Wk {week.week}
@@ -320,28 +343,80 @@ Rules:
                       </span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setExpandedWeek(isExpanded ? null : week.week)}
-                    className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </button>
+
+                  {(week.topics.length > 0 || hasResources) && (
+                    <button
+                      onClick={() => setExpandedWeek(isExpanded ? null : week.week)}
+                      className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {isExpanded && (
-                  <div className="border-t border-border/50 px-4 pb-3 pt-2">
-                    <ul className="space-y-1.5">
-                      {week.topics.map((t, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="border-t border-border/50 px-4 pb-4 pt-3 space-y-4">
+                    {week.topics.length > 0 && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          Topics
+                        </p>
+                        <ul className="space-y-1">
+                          {week.topics.map((t, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 text-sm text-muted-foreground"
+                            >
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
+                              {t}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {hasResources && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          Resources
+                        </p>
+                        <div className="space-y-1.5">
+                          {week.resources!.map((resource, i) => {
+                            const meta = RESOURCE_META[resource.type] ?? RESOURCE_META.aegiscode;
+                            const Icon = meta.icon;
+                            const isExternal = resource.url.startsWith('http');
+                            return (
+                              <a
+                                key={i}
+                                href={resource.url}
+                                target={isExternal ? '_blank' : undefined}
+                                rel={isExternal ? 'noopener noreferrer' : undefined}
+                                className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/60 px-3 py-2 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+                              >
+                                <span
+                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${meta.className}`}
+                                >
+                                  <Icon className="h-3.5 w-3.5" />
+                                </span>
+                                <span className="min-w-0 flex-1 truncate font-medium">
+                                  {resource.title}
+                                </span>
+                                <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                  {meta.label}
+                                </span>
+                                {isExternal && (
+                                  <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/50" />
+                                )}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
