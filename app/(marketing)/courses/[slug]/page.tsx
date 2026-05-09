@@ -4,6 +4,7 @@ import { buildMetadata } from '@/lib/seo';
 import { getCourseBySlug } from '@/services/course.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ChatbotWidget } from '@/components/chatbot/chatbot-widget';
 import { getServerUserProfile } from '@/lib/auth';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -35,6 +36,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   }
 
   return (
+    <>
+    <ChatbotWidget />
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-16 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <Badge>{course.level}</Badge>
@@ -78,5 +81,6 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { BookmarkButton } from '@/components/content/bookmark-button';
 import { ReadingProgress } from '@/components/content/reading-progress';
 import { RichContentRenderer } from '@/components/content/rich-content-renderer';
 import { ViewTracker } from '@/components/content/view-tracker';
+import { ChatbotWidget } from '@/components/chatbot/chatbot-widget';
 import { buildMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
 import { getBlogBySlug, getBasicContentBySlugs } from '@/services/content.service';
@@ -56,6 +57,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <>
       <ReadingProgress />
       <ViewTracker slug={post.slug} type="blog" />
+      <ChatbotWidget />
       <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
         <header className="mb-10 space-y-5">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">{post.categorySlug.replace(/-/g, ' ')}</p>

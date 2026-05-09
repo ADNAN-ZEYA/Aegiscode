@@ -3,6 +3,7 @@ import { buildMetadata } from '@/lib/seo';
 import { getCourseBySlug, getCourseModule } from '@/services/course.service';
 import { ReadingProgress } from '@/components/content/reading-progress';
 import { RichContentRenderer } from '@/components/content/rich-content-renderer';
+import { ChatbotWidget } from '@/components/chatbot/chatbot-widget';
 import { getServerUserProfile } from '@/lib/auth';
 import type { CourseModule } from '@/types/course';
 
@@ -52,6 +53,7 @@ export default async function CourseModulePage({
   return (
     <>
       <ReadingProgress />
+      <ChatbotWidget />
       <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
         <header className="mb-10 space-y-4">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">{course.title}</p>

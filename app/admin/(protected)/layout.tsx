@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import {
   BookOpen,
+  Bot,
   FileUp,
   FolderKanban,
   GraduationCap,
@@ -22,6 +23,7 @@ const adminLinks = [
   { href: '/admin/courses', label: 'Courses', icon: FolderKanban },
   { href: '/admin/quizzes', label: 'Quizzes', icon: GraduationCap },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/ai-settings', label: 'AI Settings', icon: Bot },
 ];
 
 export default async function AdminProtectedLayout({ children }: { children: ReactNode }) {
