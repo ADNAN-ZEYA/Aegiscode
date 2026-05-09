@@ -12,6 +12,7 @@
     "firebase:deploy": "firebase deploy"
   },
   "dependencies": {
+    "@google-cloud/aiplatform": "^6.7.0",
     "@hookform/resolvers": "^4.1.0",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
@@ -28,6 +29,7 @@
     "firebase": "^12.6.0",
     "firebase-admin": "^13.5.0",
     "framer-motion": "^12.10.5",
+    "googleapis": "^171.4.0",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.555.0",
     "next": "^15.0.0",

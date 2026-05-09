@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
-import { ArrowRight, BookMarked, ChartColumnIncreasing, GraduationCap, SearchCheck } from 'lucide-react';
+import { ArrowRight, BookMarked, GraduationCap, SearchCheck } from 'lucide-react';
 import { ContentCard } from '@/components/content/content-card';
 import { CourseCard } from '@/components/course/course-card';
 import { FadeIn } from '@/components/motion/fade-in';
@@ -51,17 +51,12 @@ export default async function HomePage() {
             {
               icon: SearchCheck,
               title: 'Search-first discovery',
-              copy: 'Structured category filters and low-cost indexed queries.',
+              copy: 'Find what you need fast with structured categories and instant filtering.',
             },
             {
               icon: BookMarked,
               title: 'Reading-focused content',
               copy: 'Progress bars, bookmarks, rich sections, and code-aware rendering.',
-            },
-            {
-              icon: ChartColumnIncreasing,
-              title: 'Admin visibility',
-              copy: 'Track views, saves, completion, and moderation from one dashboard.',
             },
           ].map((item) => (
             <div key={item.title} className="group relative overflow-hidden rounded-3xl border border-border/50 bg-background/50 p-6 shadow-soft backdrop-blur-md transition-all hover:scale-[1.02] hover:border-primary/50">
@@ -132,8 +127,8 @@ export default async function HomePage() {
             <div className="space-y-2">
               <h3 className="font-serif text-2xl">How courses work here</h3>
               <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
-                Admins may upload PDF source material internally, but students only see structured, readable text lessons
-                on the website. That keeps the learning experience fast, searchable, and revision-friendly.
+                Every course is built for online reading — structured lesson text, no file downloads, fast on any connection.
+                Work through each module at your own pace and bookmark anything you want to revisit.
               </p>
             </div>
           </div>

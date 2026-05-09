@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { GoogleAuth } from 'google-auth-library';
 import { adminAuth } from '@/lib/firebase/admin';
 import {
   getAISettings,
@@ -7,6 +8,15 @@ import {
   incrementConversation,
 } from '@/services/chatbot.service';
 import type { ChatMessage, PageContext } from '@/types/chatbot';
+
+const VERTEX_ENDPOINT =
+  'https://us-east5-aiplatform.googleapis.com/v1/projects/emerald-trilogy-495821-a0' +
+  '/locations/us-east5/publishers/anthropic/models/claude-sonnet-4-6:rawPredict';
+
+// ADC: resolves from GOOGLE_APPLICATION_CREDENTIALS, Workload Identity, or metadata server.
+const googleAuth = new GoogleAuth({
+  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+});
 
 interface ChatRequestBody {
   messages: ChatMessage[];
@@ -97,45 +107,61 @@ Guidelines:
     ? `${basePrompt}\n\nAdditional instructions from the administrator:\n${settings.systemPrompt}`
     : basePrompt;
 
-  // 7. Validate Vertex AI configuration
-  const apiKey = process.env.GOOGLE_API_KEY;
-  const projectId = process.env.GOOGLE_PROJECT_ID;
-  const location = process.env.GOOGLE_LOCATION ?? 'us-east5';
-
-  if (!apiKey || !projectId) {
-    console.error('Missing GOOGLE_API_KEY or GOOGLE_PROJECT_ID environment variables');
-    return NextResponse.json({ error: 'AI service is not configured.' }, { status: 500 });
+  // 7. Call Vertex AI with an ADC Bearer token
+  let accessToken: string;
+  try {
+    const client = await googleAuth.getClient();
+    const tokenResponse = await client.getAccessToken();
+    if (!tokenResponse.token) throw new Error('Empty access token');
+    accessToken = tokenResponse.token;
+  } catch (err) {
+    console.error('ADC token error:', err);
+    return NextResponse.json({ error: 'Failed to obtain credentials.' }, { status: 500 });
   }
 
-  // 8. Call Vertex AI (Anthropic Claude via rawPredict)
-  const vertexUrl =
-    `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}` +
-    `/locations/${location}/publishers/anthropic/models/claude-sonnet-4-6:rawPredict?key=${apiKey}`;
+  const vertexBody = JSON.stringify({
+    anthropic_version: 'vertex-2023-10-16',
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages: messages.map((m) => ({ role: m.role, content: m.content })),
+  });
 
-  let vertexResponse: Response;
-  try {
-    vertexResponse = await fetch(vertexUrl, {
+  const fetchVertex = () =>
+    fetch(VERTEX_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        anthropic_version: 'vertex-2023-10-16',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: vertexBody,
     });
+
+  let vertexRes: Response;
+  try {
+    vertexRes = await fetchVertex();
+    if (vertexRes.status === 429) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      vertexRes = await fetchVertex();
+    }
   } catch (err) {
     console.error('Vertex AI fetch error:', err);
     return NextResponse.json({ error: 'Failed to reach AI service.' }, { status: 502 });
   }
 
-  if (!vertexResponse.ok) {
-    const errorText = await vertexResponse.text();
-    console.error('Vertex AI error response:', vertexResponse.status, errorText);
+  if (vertexRes.status === 429) {
+    return NextResponse.json(
+      { error: "I'm a bit busy right now, please try again in a moment." },
+      { status: 429 },
+    );
+  }
+
+  if (!vertexRes.ok) {
+    const errorText = await vertexRes.text();
+    console.error('Vertex AI error response:', vertexRes.status, errorText);
     return NextResponse.json({ error: 'AI service returned an error.' }, { status: 502 });
   }
 
-  const result = await vertexResponse.json();
+  const result = await vertexRes.json();
   const content: string = result?.content?.[0]?.text ?? '';
 
   return NextResponse.json({ content });

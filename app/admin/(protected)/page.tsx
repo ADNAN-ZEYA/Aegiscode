@@ -2,69 +2,118 @@ export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
 import {
-  BookMarked,
-  ChartNoAxesCombined,
-  Eye,
-  Users,
-  TrendingUp,
-  BookOpen,
-  GraduationCap,
-  ArrowUpRight,
   Activity,
+  ArrowUpRight,
+  BookMarked,
+  BookOpen,
+  Eye,
   FileText,
+  GraduationCap,
+  HelpCircle,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
-import { getAnalyticsOverview } from '@/services/analytics.service';
+import { AggregateField } from 'firebase-admin/firestore';
+import { adminDb } from '@/lib/firebase/admin';
 import { listBlogs, listStudyMaterials } from '@/services/content.service';
+import { listCourses } from '@/services/course.service';
+import { listQuizzes } from '@/services/quiz.service';
 import { listUsers } from '@/services/user.service';
 
+// ---------------------------------------------------------------------------
+// Stats — computed from live Firestore data via aggregate queries
+// ---------------------------------------------------------------------------
+async function getDashboardStats() {
+  const empty = { totalViews: 0, totalStudents: 0, totalBookmarks: 0, publishedCount: 0 };
+  if (!adminDb) return empty;
+
+  try {
+    const [
+      contentViews, courseViews, quizViews,
+      studentCount,
+      bookmarkSum,
+      publishedContent, publishedCourses, publishedQuizzes,
+    ] = await Promise.all([
+      adminDb.collection('content').aggregate({ v: AggregateField.sum('viewCount') }).get(),
+      adminDb.collection('courses').aggregate({ v: AggregateField.sum('viewCount') }).get(),
+      adminDb.collection('quizzes').aggregate({ v: AggregateField.sum('viewCount') }).get(),
+      adminDb.collection('users').where('role', '==', 'student').count().get(),
+      adminDb.collection('users').aggregate({ b: AggregateField.sum('bookmarksCount') }).get(),
+      adminDb.collection('content').where('status', '==', 'published').count().get(),
+      adminDb.collection('courses').where('status', '==', 'published').count().get(),
+      adminDb.collection('quizzes').where('status', '==', 'published').count().get(),
+    ]);
+
+    return {
+      totalViews:
+        (contentViews.data().v ?? 0) +
+        (courseViews.data().v ?? 0) +
+        (quizViews.data().v ?? 0),
+      totalStudents: studentCount.data().count,
+      totalBookmarks: bookmarkSum.data().b ?? 0,
+      publishedCount:
+        publishedContent.data().count +
+        publishedCourses.data().count +
+        publishedQuizzes.data().count,
+    };
+  } catch {
+    return empty;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 export default async function AdminDashboardPage() {
-  const [analytics, blogs, studyMaterials, users] = await Promise.all([
-    getAnalyticsOverview(),
+  const [stats, blogs, studyMaterials, courses, quizzes, users] = await Promise.all([
+    getDashboardStats(),
     listBlogs({ limit: 4 }),
     listStudyMaterials({ limit: 3 }),
+    listCourses({ limit: 3 }),
+    listQuizzes(4),
     listUsers(5),
   ]);
 
-  const stats = [
+  const statCards = [
     {
-      label: 'Views Today',
-      value: analytics.viewsToday.toLocaleString(),
+      label: 'Total Views',
+      value: stats.totalViews.toLocaleString(),
+      sub: 'across all content',
       icon: Eye,
-      change: '+12.4%',
-      up: true,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
       ring: 'ring-blue-500/20',
+      up: true,
     },
     {
-      label: 'Weekly Readers',
-      value: analytics.weeklyReaders.toLocaleString(),
+      label: 'Students',
+      value: stats.totalStudents.toLocaleString(),
+      sub: 'registered accounts',
       icon: Users,
-      change: '+8.1%',
-      up: true,
       color: 'text-violet-400',
       bg: 'bg-violet-500/10',
       ring: 'ring-violet-500/20',
+      up: true,
     },
     {
-      label: 'Saved Articles',
-      value: analytics.savedArticles.toLocaleString(),
+      label: 'Bookmarks',
+      value: stats.totalBookmarks.toLocaleString(),
+      sub: 'saved by students',
       icon: BookMarked,
-      change: '+3.2%',
-      up: true,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       ring: 'ring-emerald-500/20',
+      up: true,
     },
     {
-      label: 'Completion Rate',
-      value: `${analytics.completionRate}%`,
-      icon: ChartNoAxesCombined,
-      change: '-1.5%',
-      up: false,
+      label: 'Published',
+      value: stats.publishedCount.toLocaleString(),
+      sub: 'content items live',
+      icon: TrendingUp,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       ring: 'ring-amber-500/20',
+      up: true,
     },
   ];
 
@@ -79,7 +128,7 @@ export default async function AdminDashboardPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <div
             key={stat.label}
             className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 transition hover:bg-white/[0.05]"
@@ -91,18 +140,12 @@ export default async function AdminDashboardPage() {
               </div>
             </div>
             <p className="mt-3 text-3xl font-bold text-white">{stat.value}</p>
-            <div className="mt-2 flex items-center gap-1.5">
-              <TrendingUp className={`h-3 w-3 ${stat.up ? 'text-emerald-400' : 'text-red-400 rotate-180'}`} />
-              <span className={`text-xs font-medium ${stat.up ? 'text-emerald-400' : 'text-red-400'}`}>
-                {stat.change}
-              </span>
-              <span className="text-xs text-white/25">vs last week</span>
-            </div>
+            <p className="mt-1.5 text-xs text-white/25">{stat.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Main content grid */}
+      {/* Main content grid — blogs + users */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent blogs */}
         <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-white/[0.03] p-6">
@@ -113,7 +156,7 @@ export default async function AdminDashboardPage() {
             </div>
             <Link
               href="/admin/content"
-              className="flex items-center gap-1 text-xs text-white/30 hover:text-violet-400 transition"
+              className="flex items-center gap-1 text-xs text-white/30 transition hover:text-violet-400"
             >
               Manage <ArrowUpRight className="h-3 w-3" />
             </Link>
@@ -132,7 +175,7 @@ export default async function AdminDashboardPage() {
                   <div className="ml-4 flex items-center gap-3 text-xs text-white/30">
                     <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
-                      {blog.viewCount}
+                      {blog.viewCount.toLocaleString()}
                     </span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
@@ -167,33 +210,38 @@ export default async function AdminDashboardPage() {
             </div>
             <Link
               href="/admin/users"
-              className="flex items-center gap-1 text-xs text-white/30 hover:text-violet-400 transition"
+              className="flex items-center gap-1 text-xs text-white/30 transition hover:text-violet-400"
             >
               All <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="space-y-3">
             {users.length > 0 ? (
-              users.map((u) => (
-                <div key={u.uid} className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white/60">
-                    {u.name?.charAt(0)?.toUpperCase() ?? '?'}
+              users.map((u) => {
+                const displayName = u.name || u.email?.split('@')[0] || 'Unknown';
+                const displayHandle = u.username || u.email?.split('@')[0] || '—';
+                const initial = displayName.charAt(0).toUpperCase();
+                return (
+                  <div key={u.uid} className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white/60">
+                      {initial}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white">{displayName}</p>
+                      <p className="truncate text-xs text-white/30">@{displayHandle}</p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        u.role === 'admin'
+                          ? 'bg-violet-500/10 text-violet-400'
+                          : 'bg-white/5 text-white/30'
+                      }`}
+                    >
+                      {u.role}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">{u.name}</p>
-                    <p className="truncate text-xs text-white/30">@{u.username}</p>
-                  </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      u.role === 'admin'
-                        ? 'bg-violet-500/10 text-violet-400'
-                        : 'bg-white/5 text-white/30'
-                    }`}
-                  >
-                    {u.role}
-                  </span>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-sm text-white/30">No users yet.</p>
             )}
@@ -201,7 +249,7 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Study materials row */}
+      {/* Study materials */}
       <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -210,7 +258,7 @@ export default async function AdminDashboardPage() {
           </div>
           <Link
             href="/admin/pdf-upload"
-            className="flex items-center gap-1 rounded-lg bg-violet-600/20 px-3 py-1.5 text-xs font-medium text-violet-400 ring-1 ring-violet-500/20 hover:bg-violet-600/30 transition"
+            className="flex items-center gap-1 rounded-lg bg-violet-600/20 px-3 py-1.5 text-xs font-medium text-violet-400 ring-1 ring-violet-500/20 transition hover:bg-violet-600/30"
           >
             + Upload PDF
           </Link>
@@ -218,15 +266,12 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {studyMaterials.items.length > 0 ? (
             studyMaterials.items.map((mat) => (
-              <div
-                key={mat.slug}
-                className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
-              >
+              <div key={mat.slug} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
                 <p className="truncate text-sm font-medium text-white">{mat.title}</p>
                 <p className="mt-1 line-clamp-2 text-xs text-white/30">{mat.excerpt}</p>
                 <div className="mt-3 flex items-center justify-between text-xs text-white/25">
                   <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" /> {mat.viewCount}
+                    <Eye className="h-3 w-3" /> {mat.viewCount.toLocaleString()}
                   </span>
                   <span className="flex items-center gap-1">
                     <Activity className="h-3 w-3" /> {mat.readingTime} min
@@ -240,6 +285,106 @@ export default async function AdminDashboardPage() {
               <p className="mt-2 text-sm text-white/30">No study materials yet.</p>
               <Link href="/admin/pdf-upload" className="mt-2 inline-block text-xs text-violet-400 hover:underline">
                 Upload your first PDF →
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Quizzes */}
+      <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-4 w-4 text-violet-400" />
+            <h2 className="text-sm font-semibold text-white">Recent Quizzes</h2>
+          </div>
+          <Link
+            href="/admin/quizzes"
+            className="flex items-center gap-1 text-xs text-white/30 transition hover:text-violet-400"
+          >
+            Manage <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {quizzes.items.length > 0 ? (
+            quizzes.items.map((quiz) => (
+              <div key={quiz.slug} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                <p className="truncate text-sm font-medium text-white">{quiz.title}</p>
+                <p className="mt-0.5 truncate text-xs text-white/30">{quiz.categorySlug}</p>
+                <div className="mt-3 flex items-center justify-between text-xs text-white/25">
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" /> {quiz.viewCount.toLocaleString()}
+                  </span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                      quiz.difficulty === 'hard'
+                        ? 'bg-red-500/10 text-red-400'
+                        : quiz.difficulty === 'medium'
+                        ? 'bg-amber-500/10 text-amber-400'
+                        : 'bg-emerald-500/10 text-emerald-400'
+                    }`}
+                  >
+                    {quiz.difficulty}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full rounded-xl border border-dashed border-white/10 py-8 text-center">
+              <HelpCircle className="mx-auto h-6 w-6 text-white/20" />
+              <p className="mt-2 text-sm text-white/30">No quizzes yet.</p>
+              <Link href="/admin/quizzes" className="mt-2 inline-block text-xs text-violet-400 hover:underline">
+                Create your first quiz →
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Courses */}
+      <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-violet-400" />
+            <h2 className="text-sm font-semibold text-white">Recent Courses</h2>
+          </div>
+          <Link
+            href="/admin/courses"
+            className="flex items-center gap-1 text-xs text-white/30 transition hover:text-violet-400"
+          >
+            Manage <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {courses.items.length > 0 ? (
+            courses.items.map((course) => (
+              <div key={course.slug} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                <p className="truncate text-sm font-medium text-white">{course.title}</p>
+                <p className="mt-0.5 truncate text-xs text-white/30">{course.categorySlug}</p>
+                <div className="mt-3 flex items-center justify-between text-xs text-white/25">
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" /> {course.enrolledCount.toLocaleString()} enrolled
+                  </span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                      course.level === 'advanced'
+                        ? 'bg-red-500/10 text-red-400'
+                        : course.level === 'intermediate'
+                        ? 'bg-amber-500/10 text-amber-400'
+                        : 'bg-emerald-500/10 text-emerald-400'
+                    }`}
+                  >
+                    {course.level}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full rounded-xl border border-dashed border-white/10 py-8 text-center">
+              <BookOpen className="mx-auto h-6 w-6 text-white/20" />
+              <p className="mt-2 text-sm text-white/30">No courses yet.</p>
+              <Link href="/admin/courses" className="mt-2 inline-block text-xs text-violet-400 hover:underline">
+                Create your first course →
               </Link>
             </div>
           )}

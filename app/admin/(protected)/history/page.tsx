@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit, FileText, BookOpen } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { DeleteContentButton } from './delete-content-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,11 +80,18 @@ export default async function AdminHistoryPage() {
                       </div>
                     </div>
                   </div>
-                  <Link href={`/admin/history/edit/${item.contentType}/${item.id}`}>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background transition-colors hover:bg-primary hover:text-primary-foreground">
-                      <Edit className="h-4 w-4" />
-                    </div>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link href={`/admin/history/edit/${item.contentType}/${item.id}`}>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background transition-colors hover:bg-primary hover:text-primary-foreground">
+                        <Edit className="h-4 w-4" />
+                      </div>
+                    </Link>
+                    <DeleteContentButton
+                      id={item.id}
+                      contentType={item.contentType}
+                      title={item.title}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

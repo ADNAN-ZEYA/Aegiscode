@@ -25,6 +25,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Blogs and study materials stored together in the 'content' collection
+    match /content/{document=**} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
     match /blogs/{document=**} {
       allow read: if isPublished() || isAdmin();
       allow write: if isAdmin();
