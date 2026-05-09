@@ -6,7 +6,8 @@
       "Bash(git commit -m ' *)",
       "Bash(npm install *)",
       "Bash(node -e \"require\\('@google-cloud/aiplatform'\\); console.log\\('OK'\\)\")",
-      "Read(//e/projects/aegiscode/app/api/chat/**)"
+      "Read(//e/projects/aegiscode/app/api/chat/**)",
+      "Bash(npx tsc *)"
     ]
   }
 }
