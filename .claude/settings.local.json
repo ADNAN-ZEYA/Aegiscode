@@ -3,7 +3,10 @@
     "allow": [
       "Bash(node -e ' *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"require\\('@google-cloud/aiplatform'\\); console.log\\('OK'\\)\")",
+      "Read(//e/projects/aegiscode/app/api/chat/**)"
     ]
   }
 }

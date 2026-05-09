@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { PredictionServiceClient } from '@google-cloud/aiplatform';
 import { adminAuth } from '@/lib/firebase/admin';
 import {
   getAISettings,
@@ -7,6 +8,18 @@ import {
   incrementConversation,
 } from '@/services/chatbot.service';
 import type { ChatMessage, PageContext } from '@/types/chatbot';
+
+const PROJECT_ID = 'emerald-trilogy-495821-a0';
+const LOCATION = 'us-east5';
+const MODEL = 'claude-sonnet-4-6';
+const ENDPOINT =
+  `projects/${PROJECT_ID}/locations/${LOCATION}/publishers/anthropic/models/${MODEL}`;
+
+// ADC picks up credentials automatically (GOOGLE_APPLICATION_CREDENTIALS,
+// Workload Identity, or the metadata server on Cloud Run / GKE).
+const predictionClient = new PredictionServiceClient({
+  apiEndpoint: `${LOCATION}-aiplatform.googleapis.com`,
+});
 
 interface ChatRequestBody {
   messages: ChatMessage[];
@@ -97,46 +110,33 @@ Guidelines:
     ? `${basePrompt}\n\nAdditional instructions from the administrator:\n${settings.systemPrompt}`
     : basePrompt;
 
-  // 7. Validate Vertex AI configuration
-  const apiKey = process.env.GOOGLE_API_KEY;
-  const projectId = process.env.GOOGLE_PROJECT_ID;
-  const location = process.env.GOOGLE_LOCATION ?? 'us-east5';
+  // 7. Call Vertex AI via PredictionServiceClient (ADC)
+  const requestBody = {
+    anthropic_version: 'vertex-2023-10-16',
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages: messages.map((m) => ({ role: m.role, content: m.content })),
+  };
 
-  if (!apiKey || !projectId) {
-    console.error('Missing GOOGLE_API_KEY or GOOGLE_PROJECT_ID environment variables');
-    return NextResponse.json({ error: 'AI service is not configured.' }, { status: 500 });
-  }
-
-  // 8. Call Vertex AI (Anthropic Claude via rawPredict)
-  const vertexUrl =
-    `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}` +
-    `/locations/${location}/publishers/anthropic/models/claude-sonnet-4-6:rawPredict?key=${apiKey}`;
-
-  let vertexResponse: Response;
+  let rawResult: unknown;
   try {
-    vertexResponse = await fetch(vertexUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        anthropic_version: 'vertex-2023-10-16',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      }),
+    const [response] = await predictionClient.rawPredict({
+      endpoint: ENDPOINT,
+      httpBody: {
+        contentType: 'application/json',
+        data: Buffer.from(JSON.stringify(requestBody)),
+      },
     });
+    rawResult = JSON.parse(
+      Buffer.from(response.data as Uint8Array).toString('utf-8'),
+    );
   } catch (err) {
-    console.error('Vertex AI fetch error:', err);
-    return NextResponse.json({ error: 'Failed to reach AI service.' }, { status: 502 });
-  }
-
-  if (!vertexResponse.ok) {
-    const errorText = await vertexResponse.text();
-    console.error('Vertex AI error response:', vertexResponse.status, errorText);
+    console.error('Vertex AI rawPredict error:', err);
     return NextResponse.json({ error: 'AI service returned an error.' }, { status: 502 });
   }
 
-  const result = await vertexResponse.json();
-  const content: string = result?.content?.[0]?.text ?? '';
+  const content: string =
+    (rawResult as { content?: { text?: string }[] })?.content?.[0]?.text ?? '';
 
   return NextResponse.json({ content });
 }
