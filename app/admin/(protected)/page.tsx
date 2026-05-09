@@ -317,9 +317,9 @@ export default async function AdminDashboardPage() {
                   </span>
                   <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                      quiz.difficulty === 'hard'
+                      quiz.difficulty === 'advanced'
                         ? 'bg-red-500/10 text-red-400'
-                        : quiz.difficulty === 'medium'
+                        : quiz.difficulty === 'intermediate'
                         ? 'bg-amber-500/10 text-amber-400'
                         : 'bg-emerald-500/10 text-emerald-400'
                     }`}

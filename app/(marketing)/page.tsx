@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { listBlogs, listStudyMaterials } from '@/services/content.service';
 import { listCourses } from '@/services/course.service';
+import { getServerUserProfile } from '@/lib/auth';
 
 export default async function HomePage() {
-  const [blogs, studyMaterials, courses] = await Promise.all([
+  const [blogs, studyMaterials, courses, user] = await Promise.all([
     listBlogs({ limit: 3 }),
     listStudyMaterials({ limit: 3 }),
     listCourses({ limit: 3 }),
+    getServerUserProfile(),
   ]);
 
   return (
@@ -69,6 +71,33 @@ export default async function HomePage() {
         </div>
         </FadeIn>
       </section>
+
+      {!user && (
+        <FadeIn delay={0.04}>
+        <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-indigo-500/5 p-8 sm:p-12">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,theme(colors.primary/10),transparent)]" />
+          <div className="relative flex flex-col items-center gap-8 text-center sm:flex-row sm:text-left">
+            <div className="flex-1 space-y-3">
+              <h2 className="font-serif text-3xl">Start your personalised learning journey</h2>
+              <p className="max-w-lg text-muted-foreground">
+                Create a free account to access your dashboard, save bookmarks, track progress, and get AI-powered study help.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap justify-center gap-3 sm:justify-end">
+              <Button asChild size="lg">
+                <Link href="/register">
+                  Create Free Account
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/login">Sign In</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+        </FadeIn>
+      )}
 
       <section className="space-y-8">
         <div className="flex items-end justify-between gap-4">
