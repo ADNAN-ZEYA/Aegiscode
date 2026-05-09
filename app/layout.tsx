@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Inter, Source_Serif_4 } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { buildMetadata } from '@/lib/seo';
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ThemeProvider>
           <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
