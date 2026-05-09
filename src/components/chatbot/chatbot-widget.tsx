@@ -248,12 +248,11 @@ export function ChatbotWidget() {
                         )}
                       >
                         {msg.role === 'assistant' ? (
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-headings:my-2"
-                          >
+                          <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-headings:my-2">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {msg.content}
-                          </ReactMarkdown>
+                            </ReactMarkdown>
+                          </div>
                         ) : (
                           msg.content
                         )}
