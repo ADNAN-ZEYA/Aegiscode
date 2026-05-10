@@ -24,7 +24,7 @@ export default async function HomePage() {
         <div className="space-y-8">
           <Badge className="bg-accent/15 text-foreground">Built for reading, not dumping files</Badge>
           <div className="space-y-5">
-            <h1 className="max-w-4xl font-serif text-5xl font-semibold tracking-tight sm:text-7xl">
+            <h1 className="max-w-4xl font-serif text-4xl font-semibold tracking-tight sm:text-5xl lg:text-7xl">
               <span className="bg-gradient-to-r from-primary via-indigo-400 to-primary bg-clip-text text-transparent">Educational publishing</span> that feels like premium tech docs.
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground">
@@ -76,7 +76,7 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-8">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Latest blog posts</p>
             <h2 className="font-serif text-3xl">Fresh thinking for builders and learners</h2>
@@ -93,7 +93,7 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-8">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Study materials</p>
             <h2 className="font-serif text-3xl">Structured modules that are meant to be read online</h2>
@@ -110,7 +110,7 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-8">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Course section</p>
             <h2 className="font-serif text-3xl">Text-based learning tracks for engineering students</h2>
