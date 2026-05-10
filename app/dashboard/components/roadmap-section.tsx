@@ -270,7 +270,7 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
               })}
             </p>
             {roadmap.goal && (
-              <p className="mt-1.5 text-xs italic text-muted-foreground/70">
+              <p className="mt-1.5 line-clamp-2 text-xs italic text-muted-foreground/70">
                 &ldquo;{roadmap.goal}&rdquo;
               </p>
             )}
@@ -312,7 +312,7 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
             return (
               <div
                 key={week.week}
-                className={`rounded-xl border transition-colors ${
+                className={`overflow-hidden rounded-xl border transition-colors ${
                   isCompleted ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/30'
                 }`}
               >
@@ -359,7 +359,7 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
                 </div>
 
                 {isExpanded && (
-                  <div className="border-t border-border/50 px-4 pb-4 pt-3 space-y-4">
+                  <div className="border-t border-border/50 px-3 pb-4 pt-3 space-y-4">
                     {week.topics.length > 0 && (
                       <div className="space-y-1.5">
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -372,7 +372,7 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
                               className="flex items-start gap-2 text-sm text-muted-foreground"
                             >
                               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
-                              {t}
+                              <span className="min-w-0 break-words">{t}</span>
                             </li>
                           ))}
                         </ul>
@@ -395,18 +395,15 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
                                 href={resource.url}
                                 target={isExternal ? '_blank' : undefined}
                                 rel={isExternal ? 'noopener noreferrer' : undefined}
-                                className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/60 px-3 py-2 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+                                className="flex min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-2.5 py-2 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
                               >
                                 <span
                                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${meta.className}`}
                                 >
                                   <Icon className="h-3.5 w-3.5" />
                                 </span>
-                                <span className="min-w-0 flex-1 truncate font-medium">
+                                <span className="min-w-0 flex-1 truncate text-xs font-medium">
                                   {resource.title}
-                                </span>
-                                <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                                  {meta.label}
                                 </span>
                                 {isExternal && (
                                   <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/50" />
