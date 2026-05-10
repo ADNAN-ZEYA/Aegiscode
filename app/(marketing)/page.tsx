@@ -1,7 +1,9 @@
-export const dynamic = 'force-dynamic';
+// Revalidate every 5 minutes — content updates propagate quickly without
+// serving a fresh Firestore query on every request.
+export const revalidate = 300;
 
 import Link from 'next/link';
-import { ArrowRight, BookMarked, GraduationCap, SearchCheck } from 'lucide-react';
+import { ArrowRight, BookMarked, CheckCircle2, GraduationCap, SearchCheck, Zap } from 'lucide-react';
 import { ContentCard } from '@/components/content/content-card';
 import { CourseCard } from '@/components/course/course-card';
 import { FadeIn } from '@/components/motion/fade-in';
@@ -10,6 +12,52 @@ import { Badge } from '@/components/ui/badge';
 import { listBlogs, listStudyMaterials } from '@/services/content.service';
 import { listCourses } from '@/services/course.service';
 import { getServerUserProfile } from '@/lib/auth';
+import { buildMetadata } from '@/lib/seo';
+
+export const metadata = buildMetadata({
+  title: 'AegisCode — Reading-First Engineering Education Platform',
+  description:
+    'Study materials, technical blogs, mock tests, and AI-powered learning for engineering students. Structured text-based courses for DSA, OS, DBMS, Networks, and System Design.',
+});
+
+const TRUST_STATS = [
+  { value: '50+', label: 'Study Modules' },
+  { value: '100+', label: 'Practice Questions' },
+  { value: 'Free', label: 'Core Access' },
+  { value: 'AI', label: 'Study Assistant' },
+];
+
+const FEATURES = [
+  {
+    icon: SearchCheck,
+    title: 'Search-first discovery',
+    copy: 'Find what you need fast with structured categories and instant filtering across all content types.',
+  },
+  {
+    icon: BookMarked,
+    title: 'Reading-focused content',
+    copy: 'Progress bars, bookmarks, rich sections, and code-aware rendering — built for actual studying.',
+  },
+  {
+    icon: Zap,
+    title: 'AI-powered assistance',
+    copy: 'Aria, your AI study assistant, reads every page with you and answers questions in context.',
+  },
+  {
+    icon: GraduationCap,
+    title: 'Structured learning tracks',
+    copy: 'Curated courses take you from fundamentals to placement-readiness in focused modules.',
+  },
+];
+
+const TOPICS = [
+  'Data Structures & Algorithms',
+  'Operating Systems',
+  'DBMS',
+  'Computer Networks',
+  'System Design',
+  'Web Development',
+];
 
 export default async function HomePage() {
   const [blogs, studyMaterials, courses, user] = await Promise.all([
@@ -20,149 +68,208 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-24 px-4 py-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl space-y-28 px-4 py-16 sm:px-6 lg:px-8">
+
+      {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <FadeIn>
-        <div className="space-y-8">
-          <Badge className="bg-accent/15 text-foreground">Built for reading, not dumping files</Badge>
-          <div className="space-y-5">
-            <h1 className="max-w-4xl font-serif text-4xl font-semibold tracking-tight sm:text-5xl lg:text-7xl">
-              <span className="bg-gradient-to-r from-primary via-indigo-400 to-primary bg-clip-text text-transparent">Educational publishing</span> that feels like premium tech docs.
-            </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground">
-              AegisCode turns blogs, study materials, and mock tests into fast, searchable, SEO-optimized reading experiences with admin-controlled publishing.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <Link href="/study-materials">
-                Explore Study Materials
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/blog">Read the Blog</Link>
-            </Button>
-          </div>
-        </div>
-        </FadeIn>
-
-        <FadeIn delay={0.08}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[
-            {
-              icon: SearchCheck,
-              title: 'Search-first discovery',
-              copy: 'Find what you need fast with structured categories and instant filtering.',
-            },
-            {
-              icon: BookMarked,
-              title: 'Reading-focused content',
-              copy: 'Progress bars, bookmarks, rich sections, and code-aware rendering.',
-            },
-          ].map((item) => (
-            <div key={item.title} className="group relative overflow-hidden rounded-3xl border border-border/50 bg-background/50 p-6 shadow-soft backdrop-blur-md transition-all hover:scale-[1.02] hover:border-primary/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <item.icon className="mb-4 h-6 w-6 text-primary transition-transform group-hover:-translate-y-1" />
-              <h2 className="mb-2 font-serif text-2xl">{item.title}</h2>
-              <p className="text-sm leading-7 text-muted-foreground">{item.copy}</p>
-            </div>
-          ))}
-        </div>
-        </FadeIn>
-      </section>
-
-      {!user && (
-        <FadeIn delay={0.04}>
-        <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-indigo-500/5 p-8 sm:p-12">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,theme(colors.primary/10),transparent)]" />
-          <div className="relative flex flex-col items-center gap-8 text-center sm:flex-row sm:text-left">
-            <div className="flex-1 space-y-3">
-              <h2 className="font-serif text-3xl">Start your personalised learning journey</h2>
-              <p className="max-w-lg text-muted-foreground">
-                Create a free account to access your dashboard, save bookmarks, track progress, and get AI-powered study help.
+          <div className="space-y-8">
+            <Badge className="bg-accent/15 text-foreground">
+              Free for all engineering students
+            </Badge>
+            <div className="space-y-5">
+              <h1 className="max-w-4xl font-serif text-4xl font-semibold tracking-tight sm:text-5xl lg:text-7xl">
+                <span className="bg-gradient-to-r from-primary via-indigo-400 to-primary bg-clip-text text-transparent">
+                  Educational publishing
+                </span>{' '}
+                that feels like premium tech docs.
+              </h1>
+              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                AegisCode turns blogs, study materials, and mock tests into fast, searchable,
+                beautifully readable learning experiences. Built for engineers who want to
+                actually understand the concepts — not just skim PDFs.
               </p>
             </div>
-            <div className="flex shrink-0 flex-wrap justify-center gap-3 sm:justify-end">
+            <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link href="/register">
-                  Create Free Account
+                <Link href="/study-materials">
+                  Start Studying Free
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/login">Sign In</Link>
+                <Link href="/courses">Browse Courses</Link>
               </Button>
             </div>
+
+            {/* Topic pills */}
+            <div className="flex flex-wrap gap-2">
+              {TOPICS.map((topic) => (
+                <span
+                  key={topic}
+                  className="rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground"
+                >
+                  {topic}
+                </span>
+              ))}
+            </div>
           </div>
+        </FadeIn>
+
+        <FadeIn delay={0.08}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {FEATURES.map((item) => (
+              <div
+                key={item.title}
+                className="group relative overflow-hidden rounded-3xl border border-border/50 bg-background/50 p-6 shadow-soft backdrop-blur-md transition-all hover:scale-[1.02] hover:border-primary/50"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <item.icon className="mb-4 h-6 w-6 text-primary transition-transform group-hover:-translate-y-1" />
+                <h2 className="mb-2 font-serif text-xl">{item.title}</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item.copy}</p>
+              </div>
+            ))}
+          </div>
+        </FadeIn>
+      </section>
+
+      {/* ── Trust stats ────────────────────────────────────────────────────── */}
+      <FadeIn>
+        <section className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+          {TRUST_STATS.map((stat) => (
+            <div key={stat.label} className="space-y-1 text-center">
+              <p className="font-serif text-4xl font-semibold text-primary">{stat.value}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
+            </div>
+          ))}
         </section>
+      </FadeIn>
+
+      {/* ── CTA for unauthenticated visitors ───────────────────────────────── */}
+      {!user && (
+        <FadeIn delay={0.04}>
+          <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-indigo-500/5 p-8 sm:p-12">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,theme(colors.primary/10),transparent)]" />
+            <div className="relative flex flex-col gap-8 sm:flex-row sm:items-center">
+              <div className="flex-1 space-y-3">
+                <h2 className="font-serif text-3xl">Start your personalised learning journey</h2>
+                <p className="max-w-lg text-muted-foreground">
+                  Create a free account to access your dashboard, save bookmarks, track progress,
+                  and get AI-powered study help with Aria.
+                </p>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  {[
+                    'Personalised study roadmaps',
+                    'AI study assistant on every page',
+                    'Bookmark anything, read anywhere',
+                  ].map((point) => (
+                    <li key={point} className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link href="/signup">
+                    Create Free Account
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/login">Sign In</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
         </FadeIn>
       )}
 
-      <section className="space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Latest blog posts</p>
-            <h2 className="font-serif text-3xl">Fresh thinking for builders and learners</h2>
-          </div>
-          <Button asChild variant="ghost">
-            <Link href="/blog">View all</Link>
-          </Button>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {blogs.items.map((item) => (
-            <ContentCard key={item.slug} item={item} href={`/blog/${item.slug}`} />
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Study materials</p>
-            <h2 className="font-serif text-3xl">Structured modules that are meant to be read online</h2>
-          </div>
-          <Button asChild variant="ghost">
-            <Link href="/study-materials">Browse all</Link>
-          </Button>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {studyMaterials.items.map((item) => (
-            <ContentCard key={item.slug} item={item} href={`/study-materials/${item.slug}`} />
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Course section</p>
-            <h2 className="font-serif text-3xl">Text-based learning tracks for engineering students</h2>
-          </div>
-          <Button asChild variant="ghost">
-            <Link href="/courses">Browse all</Link>
-          </Button>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {courses.items.map((course) => (
-            <CourseCard key={course.slug} course={course} />
-          ))}
-        </div>
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-          <div className="flex items-start gap-4">
-            <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-              <GraduationCap className="h-5 w-5" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-serif text-2xl">How courses work here</h3>
-              <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
-                Every course is built for online reading — structured lesson text, no file downloads, fast on any connection.
-                Work through each module at your own pace and bookmark anything you want to revisit.
+      {/* ── Blog ───────────────────────────────────────────────────────────── */}
+      {blogs.items.length > 0 && (
+        <section className="space-y-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
+                Latest blog posts
               </p>
+              <h2 className="font-serif text-3xl">Fresh thinking for builders and learners</h2>
+            </div>
+            <Button asChild variant="ghost">
+              <Link href="/blog">View all</Link>
+            </Button>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {blogs.items.map((item) => (
+              <ContentCard key={item.slug} item={item} href={`/blog/${item.slug}`} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Study Materials ────────────────────────────────────────────────── */}
+      {studyMaterials.items.length > 0 && (
+        <section className="space-y-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
+                Study materials
+              </p>
+              <h2 className="font-serif text-3xl">
+                Structured modules meant to be read online
+              </h2>
+            </div>
+            <Button asChild variant="ghost">
+              <Link href="/study-materials">Browse all</Link>
+            </Button>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {studyMaterials.items.map((item) => (
+              <ContentCard key={item.slug} item={item} href={`/study-materials/${item.slug}`} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Courses ────────────────────────────────────────────────────────── */}
+      {courses.items.length > 0 && (
+        <section className="space-y-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
+                Courses
+              </p>
+              <h2 className="font-serif text-3xl">
+                Text-based learning tracks for engineering students
+              </h2>
+            </div>
+            <Button asChild variant="ghost">
+              <Link href="/courses">Browse all</Link>
+            </Button>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {courses.items.map((course) => (
+              <CourseCard key={course.slug} course={course} />
+            ))}
+          </div>
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-serif text-2xl">How courses work here</h3>
+                <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
+                  Every course is built for online reading — structured lesson text, no file
+                  downloads, fast on any connection. Work through each module at your own pace
+                  and bookmark anything you want to revisit.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

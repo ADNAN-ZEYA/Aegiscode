@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { adminAuth } from '@/lib/firebase/admin';
 import { resolveRole } from '@/lib/user-profile';
 
@@ -8,8 +9,20 @@ export async function POST(request: Request) {
   const payload = await request.json().catch(() => ({}));
 
   if (adminAuth && idToken) {
-    const expiresIn = 1000 * 60 * 60 * 24 * 5;
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
+    try {
+      // Verify the ID token is valid before minting a session cookie
+      await adminAuth.verifyIdToken(idToken);
+    } catch {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+
+    const expiresIn = 1000 * 60 * 60 * 24 * 5; // 5 days
+    let sessionCookie: string;
+    try {
+      sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
+    } catch {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
 
     const response = NextResponse.json({ ok: true });
     response.cookies.set('session', sessionCookie, {
@@ -50,8 +63,21 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
+
+  // Revoke all Firebase refresh tokens for this session so it cannot be reused
+  if (sessionCookie && adminAuth) {
+    try {
+      const decoded = await adminAuth.verifySessionCookie(sessionCookie);
+      await adminAuth.revokeRefreshTokens(decoded.sub);
+    } catch {
+      // Cookie already expired or invalid — that's fine, we'll clear it anyway
+    }
+  }
+
   const response = NextResponse.json({ ok: true });
-  response.cookies.set('session', '', { maxAge: 0, path: '/' });
-  response.cookies.set('dev-session', '', { maxAge: 0, path: '/' });
+  response.cookies.set('session', '', { maxAge: 0, path: '/', httpOnly: true });
+  response.cookies.set('dev-session', '', { maxAge: 0, path: '/', httpOnly: true });
   return response;
 }

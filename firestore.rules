@@ -1,82 +1,62 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return request.auth.uid == uid; }
     function isAdmin() {
       return isSignedIn() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isPublished() {
-      return resource.data.status == 'published';
-    }
-
-    match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if false;
-    }
-
-    // Blogs and study materials stored together in the 'content' collection
-    match /content/{document=**} {
-      allow read: if isPublished() || isAdmin();
+    match /content/{slug} {
+      allow read: if resource.data.status == 'published';
       allow write: if isAdmin();
     }
 
-    match /blogs/{document=**} {
-      allow read: if isPublished() || isAdmin();
+    match /courses/{slug} {
+      allow read: if resource.data.status == 'published';
+      allow write: if isAdmin();
+      match /modules/{moduleSlug} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+      }
+    }
+
+    match /quizzes/{slug} {
+      allow read: if resource.data.status == 'published';
       allow write: if isAdmin();
     }
 
-    match /studyMaterials/{document=**} {
-      allow read: if isPublished() || isAdmin();
-      allow write: if isAdmin();
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      // Users can update their own profile but cannot self-promote their role
+      allow update: if isOwner(uid) && !('role' in request.resource.data.diff(resource.data).affectedKeys());
+      allow delete: if isAdmin();
     }
 
-    match /quizzes/{document=**} {
-      allow read: if isPublished() || isAdmin();
-      allow write: if isAdmin();
+    match /bookmarks/{id} {
+      allow read, write: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
 
-    match /courses/{document=**} {
-      allow read: if isPublished() || isAdmin();
-      allow write: if isAdmin();
-    }
+    match /settings/{doc} { allow read, write: if isAdmin(); }
 
+    // Analytics written server-side only (Admin SDK bypasses rules)
+    match /analytics/{doc} { allow read: if isAdmin(); allow write: if false; }
+
+    match /categories/{id} { allow read: if true; allow write: if isAdmin(); }
+
+    // Quiz attempts — written by the authenticated student, read by admin
     match /quizAttempts/{attemptId} {
-      allow read: if isAdmin() || isOwner(resource.data.userId);
+      allow read: if isAdmin() || (isSignedIn() && isOwner(resource.data.userId));
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 
-    match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /bookmarks/{bookmarkId} {
-      allow read: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
-      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId;
-    }
-
-    match /analytics/{analyticsId} {
-      allow read: if isAdmin();
-      allow create: if true;
-      allow update, delete: if false;
-    }
-
+    // Payments — server-side only
     match /payments/{paymentId} {
-      allow read: if isAdmin();
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
   }
 }

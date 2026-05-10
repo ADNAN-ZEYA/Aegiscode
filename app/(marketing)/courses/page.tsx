@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 import { buildMetadata } from '@/lib/seo';
 import { listCategories } from '@/services/content.service';

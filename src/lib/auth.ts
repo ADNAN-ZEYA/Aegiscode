@@ -68,7 +68,7 @@ export async function getServerUserProfile(): Promise<UserProfile | null> {
 export async function requireAuth() {
   const user = await getServerUserProfile();
   if (!user) {
-    redirect('/admin/login');
+    redirect('/login');
   }
   return user;
 }

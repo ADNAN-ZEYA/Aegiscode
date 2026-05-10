@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // 4. Parse request body
+  // 4. Parse and validate request body
   let body: ChatRequestBody;
   try {
     body = await request.json();
@@ -71,6 +71,22 @@ export async function POST(request: Request) {
   if (!Array.isArray(messages) || !pageContext?.title) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
+
+  // Hard cap to prevent token stuffing attacks
+  if (messages.length > 50) {
+    return NextResponse.json({ error: 'Conversation history too long.' }, { status: 400 });
+  }
+
+  // Truncate individual message content to prevent prompt injection via very long messages
+  const sanitizedMessages = messages.map((m) => ({
+    role: m.role === 'assistant' ? ('assistant' as const) : ('user' as const),
+    content: typeof m.content === 'string' ? m.content.substring(0, 4000) : '',
+  }));
+
+  const sanitizedContext = {
+    title: String(pageContext.title).substring(0, 200),
+    content: String(pageContext.content ?? '').substring(0, 2500),
+  };
 
   // 5. Increment analytics on each new conversation start
   if (isNewConversation) {
@@ -94,8 +110,8 @@ You have access to the current page content the student is reading. Use it as pr
 Never give wrong information. If unsure, say so honestly and guide the student to verify.
 
 Current page:
-Title: ${pageContext.title}
-Content excerpt: ${pageContext.content.substring(0, 2500)}`;
+Title: ${sanitizedContext.title}
+Content excerpt: ${sanitizedContext.content}`;
 
   const systemPrompt = settings.systemPrompt
     ? `${basePrompt}\n\nAdditional instructions from the administrator:\n${settings.systemPrompt}`
@@ -115,7 +131,7 @@ Content excerpt: ${pageContext.content.substring(0, 2500)}`;
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: messages.map((m) => ({
+        contents: sanitizedMessages.map((m) => ({
           role: m.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: m.content }],
         })),

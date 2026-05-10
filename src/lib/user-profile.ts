@@ -40,8 +40,12 @@ export async function upsertUserProfile(input: {
     };
   }
 
-  await adminDb.collection('users').doc(input.uid).set(
-    {
+  const ref = adminDb.collection('users').doc(input.uid);
+  const existing = await ref.get();
+
+  if (!existing.exists) {
+    // First-time sign-up: write full profile including computed role
+    await ref.set({
       uid: input.uid,
       name: input.name || username,
       username,
@@ -56,9 +60,20 @@ export async function upsertUserProfile(input: {
       slug: username,
       status: 'published',
       tags: ['user'],
-    },
-    { merge: true },
-  );
+    });
+  } else {
+    // Subsequent logins: only sync mutable profile fields, never overwrite role
+    await ref.update({
+      name: input.name || existing.data()?.name || username,
+      email: input.email || '',
+      image: input.image ?? existing.data()?.image ?? null,
+      updatedAt: now,
+    });
+  }
 
-  return { ok: true, role };
+  const finalRole: Role = existing.exists
+    ? ((existing.data()?.role as Role) ?? role)
+    : role;
+
+  return { ok: true, role: finalRole };
 }

@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebase/client';
-import { resolveRoleFromEmail } from '@/lib/role';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,7 @@ const links = [
 
 function DrawerAuth({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
 
   if (loading) return null;
 
@@ -49,16 +48,16 @@ function DrawerAuth({ onClose }: { onClose: () => void }) {
     );
   }
 
-  const role = resolveRoleFromEmail(user.email, process.env.NEXT_PUBLIC_ADMIN_EMAILS);
-  const dashboardHref = role === 'admin' ? '/admin' : '/dashboard';
-  const DashIcon = role === 'admin' ? Shield : User2;
+  const isAdmin = role === 'admin';
+  const dashboardHref = isAdmin ? '/admin' : '/dashboard';
+  const DashIcon = isAdmin ? Shield : User2;
 
   return (
     <div className="flex flex-col gap-2">
       <Button asChild variant="outline" className="w-full justify-start">
         <Link href={dashboardHref} onClick={onClose}>
           <DashIcon className="mr-2 h-4 w-4" />
-          {role === 'admin' ? 'Admin panel' : 'Dashboard'}
+          {isAdmin ? 'Admin panel' : 'Dashboard'}
         </Link>
       </Button>
       <Button
