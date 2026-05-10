@@ -16,7 +16,6 @@ import { signOut } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebase/client';
 import { resolveRoleFromEmail } from '@/lib/role';
 import { useAuth } from '@/components/providers/auth-provider';
-import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -149,14 +148,6 @@ export function MobileNav() {
 
           <hr className="border-border" />
 
-          {/* Theme toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Theme</span>
-            <ThemeToggle />
-          </div>
-
-          <hr className="border-border" />
-
           {/* Auth */}
           <DrawerAuth onClose={close} />
         </div>
@@ -176,7 +167,7 @@ export function MobileNav() {
         <Menu className="h-5 w-5" />
       </button>
 
-      {mounted && createPortal(overlay, document.body)}
+      {mounted && open && createPortal(overlay, document.body)}
     </>
   );
 }

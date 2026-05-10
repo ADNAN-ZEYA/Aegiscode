@@ -259,7 +259,7 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
           <div className="min-w-0">
             <CardTitle className="flex items-center gap-2 font-serif text-2xl">
               <Map className="h-5 w-5 shrink-0 text-primary" />
-              <span className="truncate">{roadmap.title}</span>
+              <span className="break-words whitespace-normal min-w-0">{roadmap.title}</span>
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               {roadmap.totalWeeks} weeks &middot; {roadmap.dailyHours}h/day &middot; Target:{' '}
@@ -335,7 +335,7 @@ Generate a ${weeks}-week roadmap. Include 3–5 topics per week and 2–4 releva
                         Wk {week.week}
                       </span>
                       <span
-                        className={`truncate text-sm font-medium ${
+                        className={`min-w-0 break-words whitespace-normal text-sm font-medium leading-snug ${
                           isCompleted ? 'line-through text-muted-foreground' : ''
                         }`}
                       >
