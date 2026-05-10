@@ -6,6 +6,10 @@ const DEFAULT_SETTINGS: AISettings = {
   enabled: true,
   systemPrompt: '',
   dailyLimit: 20,
+  roadmapEnabled: true,
+  roadmapSystemPrompt: '',
+  plannerEnabled: true,
+  maxRoadmapWeeks: 12,
 };
 
 const EMPTY_ANALYTICS: AIAnalytics = {

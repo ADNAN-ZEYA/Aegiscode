@@ -28,8 +28,6 @@ export async function POST(request: Request) {
   // 1. Verify Firebase session cookie
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;
-
-  // Support dev-session in non-production environments
   const devSessionCookie = cookieStore.get('dev-session')?.value;
 
   let uid: string;

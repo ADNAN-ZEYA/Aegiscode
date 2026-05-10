@@ -90,14 +90,20 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               <CardTitle>Course outcome</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>
-                This course is designed for engineering students who need cleaner revision material
-                than raw PDFs.
-              </p>
-              <p>
-                Work through each module at your own pace — structured lesson text, no file
-                downloads, fast on any connection.
-              </p>
+              {course.courseOutcome ? (
+                <p>{course.courseOutcome}</p>
+              ) : (
+                <>
+                  <p>
+                    This course is designed for engineering students who need cleaner revision
+                    material than raw PDFs.
+                  </p>
+                  <p>
+                    Work through each module at your own pace — structured lesson text, no file
+                    downloads, fast on any connection.
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

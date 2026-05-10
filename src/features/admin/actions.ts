@@ -159,6 +159,7 @@ export async function saveCourseAction(input: CourseInput) {
     modules: moduleSummaries, // Only summaries here!
     isPremium: parsed.isPremium,
     price: parsed.isPremium ? parsed.price ?? 0 : null,
+    courseOutcome: parsed.courseOutcome || null,
     author: {
       id: admin.uid,
       name: admin.name,

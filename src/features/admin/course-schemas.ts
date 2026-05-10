@@ -15,6 +15,7 @@ export const courseSchema = z.object({
   coverImage: z.string().url().optional().or(z.literal('')),
   isPremium: z.boolean().default(false),
   price: z.coerce.number().optional(),
+  courseOutcome: z.string().optional().or(z.literal('')),
 });
 
 export type CourseInput = z.infer<typeof courseSchema>;

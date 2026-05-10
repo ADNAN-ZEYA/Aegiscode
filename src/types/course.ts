@@ -33,4 +33,5 @@ export interface Course extends AuditFields {
   price?: number;
   publishedAt?: string;
   viewCount: number;
+  courseOutcome?: string;
 }

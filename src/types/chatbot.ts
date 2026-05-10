@@ -7,6 +7,10 @@ export interface AISettings {
   enabled: boolean;
   systemPrompt: string;
   dailyLimit: number;
+  roadmapEnabled: boolean;
+  roadmapSystemPrompt: string;
+  plannerEnabled: boolean;
+  maxRoadmapWeeks: number;
 }
 
 export interface AIAnalytics {

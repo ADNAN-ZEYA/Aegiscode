@@ -21,7 +21,21 @@ export async function saveAISettings(
     const rawLimit = parseInt(formData.get('dailyLimit') as string, 10);
     const dailyLimit = isNaN(rawLimit) ? 20 : Math.max(1, Math.min(200, rawLimit));
 
-    await updateAISettings({ enabled, systemPrompt, dailyLimit });
+    const roadmapEnabled = formData.get('roadmapEnabled') === 'true';
+    const roadmapSystemPrompt = (formData.get('roadmapSystemPrompt') as string | null) ?? '';
+    const plannerEnabled = formData.get('plannerEnabled') === 'true';
+    const rawMaxWeeks = parseInt(formData.get('maxRoadmapWeeks') as string, 10);
+    const maxRoadmapWeeks = isNaN(rawMaxWeeks) ? 12 : Math.max(1, Math.min(52, rawMaxWeeks));
+
+    await updateAISettings({
+      enabled,
+      systemPrompt,
+      dailyLimit,
+      roadmapEnabled,
+      roadmapSystemPrompt,
+      plannerEnabled,
+      maxRoadmapWeeks,
+    });
     revalidatePath('/admin/ai-settings');
 
     return { success: true, message: 'Settings saved successfully.' };

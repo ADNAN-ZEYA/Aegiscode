@@ -48,6 +48,7 @@ export function CourseForm({
       coverImage: initialValues?.coverImage || '',
       isPremium: initialValues?.isPremium || false,
       price: initialValues?.price || 0,
+      courseOutcome: initialValues?.courseOutcome || '',
     },
   });
 
@@ -79,6 +80,18 @@ export function CourseForm({
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="excerpt">Excerpt</Label>
           <Textarea id="excerpt" {...form.register('excerpt')} className="min-h-[100px]" />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="courseOutcome">Course Outcome</Label>
+          <Textarea
+            id="courseOutcome"
+            {...form.register('courseOutcome')}
+            className="min-h-[120px]"
+            placeholder="Describe what students will achieve after completing this course. e.g. Students will be able to solve medium-level DSA problems, understand time complexity, and confidently tackle coding interviews."
+          />
+          <p className="text-xs text-muted-foreground">
+            Shown on the public course page in the &quot;Course outcome&quot; section.
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="categorySlug">Category</Label>
