@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { BookOpenText, Search } from 'lucide-react';
 import { AuthControls } from '@/components/layout/auth-controls';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { MobileNav } from '@/components/layout/mobile-nav';
 import { Input } from '@/components/ui/input';
 
 const links = [
@@ -40,6 +41,8 @@ export function Navbar() {
           <ThemeToggle />
           <AuthControls />
         </div>
+
+        <MobileNav />
       </div>
     </header>
   );
