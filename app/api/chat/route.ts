@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { GoogleAuth } from 'google-auth-library';
 import { adminAuth } from '@/lib/firebase/admin';
 import {
   getAISettings,
@@ -8,15 +7,6 @@ import {
   incrementConversation,
 } from '@/services/chatbot.service';
 import type { ChatMessage, PageContext } from '@/types/chatbot';
-
-const VERTEX_ENDPOINT =
-  'https://us-east5-aiplatform.googleapis.com/v1/projects/emerald-trilogy-495821-a0' +
-  '/locations/us-east5/publishers/anthropic/models/claude-sonnet-4-6:rawPredict';
-
-// ADC: resolves from GOOGLE_APPLICATION_CREDENTIALS, Workload Identity, or metadata server.
-const googleAuth = new GoogleAuth({
-  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-});
 
 interface ChatRequestBody {
   messages: ChatMessage[];
@@ -88,79 +78,86 @@ export async function POST(request: Request) {
   }
 
   // 6. Build system prompt
-  const basePrompt = `You are an AI tutor for AegisCode, a reading-first educational platform for engineering students. Your role is to help students understand the material they are currently reading.
+  const basePrompt = `You are an expert AI tutor on AegisCode, a premium educational platform for engineering students. You have deep expertise in Data Structures & Algorithms, Operating Systems, DBMS, Computer Networks, System Design, and Web Development.
+
+Your teaching style:
+- Explain concepts clearly with real-world analogies
+- Use examples and step-by-step breakdowns
+- For code questions, provide clean well-commented code
+- For theory, connect concepts to practical applications
+- Anticipate follow-up questions and address them
+- Use formatting (bold, bullets, code blocks) for clarity
+- Always relate answers to placement interviews when relevant
+
+You have access to the current page content the student is reading. Use it as primary context for your answers. If the student asks something beyond the page, draw from your broader knowledge but always tie back to their current study topic.
+
+Never give wrong information. If unsure, say so honestly and guide the student to verify.
 
 Current page:
 Title: ${pageContext.title}
-Content excerpt: ${pageContext.content.substring(0, 2500)}
-
-Guidelines:
-- Provide clear, concise explanations tailored for engineering students.
-- Reference the current page content when answering questions.
-- When asked for a summary or revision notes, distil the key concepts from the page.
-- Use code examples when they aid understanding of technical topics.
-- Keep responses focused and educational. Avoid irrelevant tangents.`;
+Content excerpt: ${pageContext.content.substring(0, 2500)}`;
 
   const systemPrompt = settings.systemPrompt
     ? `${basePrompt}\n\nAdditional instructions from the administrator:\n${settings.systemPrompt}`
     : basePrompt;
 
-  // 7. Call Vertex AI with an ADC Bearer token
-  let accessToken: string;
-  try {
-    const client = await googleAuth.getClient();
-    const tokenResponse = await client.getAccessToken();
-    if (!tokenResponse.token) throw new Error('Empty access token');
-    accessToken = tokenResponse.token;
-  } catch (err) {
-    console.error('ADC token error:', err);
-    return NextResponse.json({ error: 'Failed to obtain credentials.' }, { status: 500 });
+  // 7. Call Gemini 2.5 Pro via Google AI Studio
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error('GEMINI_API_KEY is not set');
+    return NextResponse.json({ error: 'AI service is not configured.' }, { status: 500 });
   }
 
-  const vertexBody = JSON.stringify({
-    anthropic_version: 'vertex-2023-10-16',
-    max_tokens: 1024,
-    system: systemPrompt,
-    messages: messages.map((m) => ({ role: m.role, content: m.content })),
-  });
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
-  const fetchVertex = () =>
-    fetch(VERTEX_ENDPOINT, {
+  const fetchGemini = () =>
+    fetch(geminiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: vertexBody,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: messages.map((m) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        })),
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        generationConfig: {
+          temperature: 0.9,
+          maxOutputTokens: 8192,
+          topP: 0.95,
+          topK: 40,
+        },
+      }),
     });
 
-  let vertexRes: Response;
+  let geminiRes: Response;
   try {
-    vertexRes = await fetchVertex();
-    if (vertexRes.status === 429) {
+    geminiRes = await fetchGemini();
+    if (geminiRes.status === 429) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      vertexRes = await fetchVertex();
+      geminiRes = await fetchGemini();
     }
   } catch (err) {
-    console.error('Vertex AI fetch error:', err);
+    console.error('Gemini fetch error:', err);
     return NextResponse.json({ error: 'Failed to reach AI service.' }, { status: 502 });
   }
 
-  if (vertexRes.status === 429) {
+  if (geminiRes.status === 429) {
     return NextResponse.json(
       { error: "I'm a bit busy right now, please try again in a moment." },
       { status: 429 },
     );
   }
 
-  if (!vertexRes.ok) {
-    const errorText = await vertexRes.text();
-    console.error('Vertex AI error response:', vertexRes.status, errorText);
+  if (!geminiRes.ok) {
+    const errorText = await geminiRes.text();
+    console.error('Gemini error response:', geminiRes.status, errorText);
     return NextResponse.json({ error: 'AI service returned an error.' }, { status: 502 });
   }
 
-  const result = await vertexRes.json();
-  const content: string = result?.content?.[0]?.text ?? '';
+  const data = await geminiRes.json();
+  const content: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 
   return NextResponse.json({ content });
 }
