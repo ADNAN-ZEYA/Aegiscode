@@ -11,6 +11,17 @@ import { QuizScoresSection } from './components/quiz-scores-section';
 import { EnrolledCoursesSection } from './components/enrolled-courses-section';
 import type { RoadmapData, ProgressDoc } from './actions';
 
+/** Safely converts a Firestore Timestamp, Date, or ISO string to an ISO string. */
+function toISO(val: unknown): string | undefined {
+  if (!val) return undefined;
+  if (typeof val === 'string') return val;
+  if (val instanceof Date) return val.toISOString();
+  if (typeof val === 'object' && 'toDate' in (val as object)) {
+    return (val as { toDate(): Date }).toDate().toISOString();
+  }
+  return undefined;
+}
+
 function calculateStreak(progressDocs: ProgressDoc[]): number {
   if (!progressDocs.length) return 0;
   const progressMap = new Map(progressDocs.map((p) => [p.date, p]));
@@ -81,7 +92,10 @@ export default async function DashboardPage() {
   const roadmap = (roadmapDoc?.exists ? roadmapDoc.data() : null) as RoadmapData | null;
   const progressDocs = (progressSnap?.docs.map((d) => d.data()) ?? []) as ProgressDoc[];
   const todayProgress = progressDocs.find((p) => p.date === today) ?? null;
-  const quizAttempts = quizAttemptsSnap?.docs.map((d) => d.data()) ?? [];
+  const quizAttempts = quizAttemptsSnap?.docs.map((d) => {
+    const data = d.data();
+    return { ...data, createdAt: toISO(data.createdAt) };
+  }) ?? [];
 
   // Hydrate bookmarks with content title/excerpt via parallel fetches
   const bookmarkDocs = bookmarksSnap?.docs.map((d) => d.data()) ?? [];
@@ -101,7 +115,10 @@ export default async function DashboardPage() {
     contentId: b.contentId as string,
     contentType: b.contentType as 'blog' | 'studyMaterial',
     createdAt: b.createdAt as string,
-    title: (bookmarkContents[i]?.data()?.title as string) ?? 'Untitled',
+    title:
+      (bookmarkContents[i]?.data()?.title as string | undefined) ??
+      (bookmarkContents[i]?.id as string | undefined) ??
+      (b.contentId as string),
     slug: bookmarkContents[i]?.id ?? (b.contentId as string),
     excerpt: (bookmarkContents[i]?.data()?.excerpt as string) ?? '',
   }));

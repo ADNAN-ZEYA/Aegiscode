@@ -42,8 +42,7 @@ export function Footer() {
               clearly, revised quickly, and practiced properly.
             </p>
             <p className="text-xs text-muted-foreground/60">
-              Trusted by thousands of engineering students preparing for placements and competitive
-              exams.
+              Built for engineers who want to understand concepts deeply, not just skim slides.
             </p>
           </div>
 

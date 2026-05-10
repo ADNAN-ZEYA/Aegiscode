@@ -13,6 +13,7 @@ import { listBlogs, listStudyMaterials } from '@/services/content.service';
 import { listCourses } from '@/services/course.service';
 import { getServerUserProfile } from '@/lib/auth';
 import { buildMetadata } from '@/lib/seo';
+import { adminDb } from '@/lib/firebase/admin';
 
 export const metadata = buildMetadata({
   title: 'AegisCode — Reading-First Engineering Education Platform',
@@ -20,12 +21,23 @@ export const metadata = buildMetadata({
     'Study materials, technical blogs, mock tests, and AI-powered learning for engineering students. Structured text-based courses for DSA, OS, DBMS, Networks, and System Design.',
 });
 
-const TRUST_STATS = [
-  { value: '50+', label: 'Study Modules' },
-  { value: '100+', label: 'Practice Questions' },
-  { value: 'Free', label: 'Core Access' },
-  { value: 'AI', label: 'Study Assistant' },
-];
+async function getHomepageStats() {
+  if (!adminDb) return { contentCount: 0, quizCount: 0, userCount: 0 };
+  try {
+    const [contentSnap, quizSnap, userSnap] = await Promise.all([
+      adminDb.collection('content').where('status', '==', 'published').count().get(),
+      adminDb.collection('quizzes').where('status', '==', 'published').count().get(),
+      adminDb.collection('users').count().get(),
+    ]);
+    return {
+      contentCount: contentSnap.data().count,
+      quizCount: quizSnap.data().count,
+      userCount: userSnap.data().count,
+    };
+  } catch {
+    return { contentCount: 0, quizCount: 0, userCount: 0 };
+  }
+}
 
 const FEATURES = [
   {
@@ -60,12 +72,20 @@ const TOPICS = [
 ];
 
 export default async function HomePage() {
-  const [blogs, studyMaterials, courses, user] = await Promise.all([
+  const [blogs, studyMaterials, courses, user, stats] = await Promise.all([
     listBlogs({ limit: 3 }),
     listStudyMaterials({ limit: 3 }),
     listCourses({ limit: 3 }),
     getServerUserProfile(),
+    getHomepageStats(),
   ]);
+
+  const trustStats = [
+    { value: stats.contentCount.toString(), label: 'Resources Published' },
+    { value: stats.quizCount.toString(), label: 'Practice Quizzes' },
+    { value: stats.userCount.toString(), label: 'Students' },
+    { value: 'Free', label: 'Core Access' },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-28 px-4 py-16 sm:px-6 lg:px-8">
@@ -136,7 +156,7 @@ export default async function HomePage() {
       {/* ── Trust stats ────────────────────────────────────────────────────── */}
       <FadeIn>
         <section className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-          {TRUST_STATS.map((stat) => (
+          {trustStats.map((stat) => (
             <div key={stat.label} className="space-y-1 text-center">
               <p className="font-serif text-4xl font-semibold text-primary">{stat.value}</p>
               <p className="text-sm text-muted-foreground">{stat.label}</p>

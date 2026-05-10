@@ -99,14 +99,14 @@ export default function SignupPage() {
         <form className="space-y-4" onSubmit={submit}>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" {...form.register('name')} placeholder="Adnan Zeya" />
+            <Input id="name" {...form.register('name')} placeholder="Your full name" />
             {form.formState.errors.name && (
               <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
-            <Input id="username" {...form.register('username')} placeholder="adnan" />
+            <Input id="username" {...form.register('username')} placeholder="yourname" />
             {form.formState.errors.username && (
               <p className="text-sm text-red-500">{form.formState.errors.username.message}</p>
             )}

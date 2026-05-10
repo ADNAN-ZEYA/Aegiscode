@@ -14,6 +14,8 @@ const SUGGESTIONS = [
   'Give me revision notes',
 ];
 
+// gradientUnits="objectBoundingBox" — all instances share the same gradient ID harmlessly
+// because each instance defines the same geometry; the browser uses whichever it finds first.
 function AriaAvatar({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 28 : 36;
   return (
@@ -26,27 +28,64 @@ function AriaAvatar({ size = 'md' }: { size?: 'sm' | 'md' }) {
       className="shrink-0"
       aria-hidden="true"
     >
-      <circle cx="18" cy="18" r="18" fill="url(#aria-bg)" />
-      <ellipse cx="18" cy="12" rx="9" ry="8" fill="#7C3AED" />
-      <ellipse cx="18" cy="10" rx="8" ry="6" fill="#8B5CF6" />
-      <ellipse cx="9.5" cy="16" rx="3" ry="5" fill="#7C3AED" />
-      <ellipse cx="26.5" cy="16" rx="3" ry="5" fill="#7C3AED" />
-      <ellipse cx="18" cy="20" rx="8" ry="8.5" fill="#FDDCB5" />
-      <ellipse cx="14.5" cy="19" rx="1.3" ry="1.5" fill="#1E1E2E" />
-      <ellipse cx="21.5" cy="19" rx="1.3" ry="1.5" fill="#1E1E2E" />
-      <circle cx="15.1" cy="18.4" r="0.45" fill="white" />
-      <circle cx="22.1" cy="18.4" r="0.45" fill="white" />
-      <path d="M15 22.5 Q18 24.5 21 22.5" stroke="#C97D5C" strokeWidth="0.9" strokeLinecap="round" fill="none" />
-      <ellipse cx="13" cy="21.5" rx="2" ry="1.1" fill="#F9A8D4" opacity="0.5" />
-      <ellipse cx="23" cy="21.5" rx="2" ry="1.1" fill="#F9A8D4" opacity="0.5" />
-      <rect x="15.5" y="27" width="5" height="4" rx="2" fill="#FDDCB5" />
-      <ellipse cx="18" cy="33" rx="10" ry="4" fill="#6D28D9" />
       <defs>
-        <linearGradient id="aria-bg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#EDE9FE" />
-          <stop offset="1" stopColor="#CCFBF1" />
+        <linearGradient id="aria-bg" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+          <stop stopColor="#6D28D9" />
+          <stop offset="1" stopColor="#0D9488" />
         </linearGradient>
       </defs>
+
+      {/* Background */}
+      <circle cx="18" cy="18" r="18" fill="url(#aria-bg)" />
+
+      {/* Hair — dark, behind face */}
+      <ellipse cx="18" cy="13" rx="9.5" ry="9" fill="#1C1033" />
+      {/* Hair top arch */}
+      <path d="M8.5 18 Q9 7 18 6 Q27 7 27.5 18 Q23 12 18 12 Q13 12 8.5 18 Z" fill="#1C1033" />
+      {/* Side hair curtains */}
+      <rect x="8" y="16" width="2.8" height="13" rx="1.4" fill="#1C1033" />
+      <rect x="25.2" y="16" width="2.8" height="13" rx="1.4" fill="#1C1033" />
+
+      {/* Face */}
+      <ellipse cx="18" cy="22" rx="8.5" ry="9" fill="#FDDCB5" />
+
+      {/* Ears */}
+      <ellipse cx="9.5" cy="21" rx="1.2" ry="1.6" fill="#F0B896" />
+      <ellipse cx="26.5" cy="21" rx="1.2" ry="1.6" fill="#F0B896" />
+
+      {/* Left eyebrow */}
+      <path d="M13 18.2 Q14.5 17.2 16.5 17.7" stroke="#2A1508" strokeWidth="0.9" strokeLinecap="round" fill="none" />
+      {/* Right eyebrow */}
+      <path d="M19.5 17.7 Q21.5 17.2 23 18.2" stroke="#2A1508" strokeWidth="0.9" strokeLinecap="round" fill="none" />
+
+      {/* Left eye */}
+      <ellipse cx="14.5" cy="20.5" rx="2.1" ry="1.7" fill="white" />
+      <circle cx="14.5" cy="20.5" r="1.2" fill="#6B3D1E" />
+      <circle cx="14.5" cy="20.5" r="0.65" fill="#100800" />
+      <circle cx="15.2" cy="19.8" r="0.38" fill="white" />
+
+      {/* Right eye */}
+      <ellipse cx="21.5" cy="20.5" rx="2.1" ry="1.7" fill="white" />
+      <circle cx="21.5" cy="20.5" r="1.2" fill="#6B3D1E" />
+      <circle cx="21.5" cy="20.5" r="0.65" fill="#100800" />
+      <circle cx="22.2" cy="19.8" r="0.38" fill="white" />
+
+      {/* Nose hint */}
+      <path d="M17.3 23.5 Q18 24.2 18.7 23.5" stroke="#D4906A" strokeWidth="0.7" strokeLinecap="round" fill="none" opacity="0.7" />
+
+      {/* Smile */}
+      <path d="M15.5 25.5 Q18 27.8 20.5 25.5" stroke="#C07845" strokeWidth="1" strokeLinecap="round" fill="none" />
+
+      {/* Blush */}
+      <ellipse cx="12.5" cy="23" rx="2.4" ry="1.3" fill="#F9A8D4" opacity="0.4" />
+      <ellipse cx="23.5" cy="23" rx="2.4" ry="1.3" fill="#F9A8D4" opacity="0.4" />
+
+      {/* Neck */}
+      <rect x="15.5" y="30" width="5" height="4" rx="1.5" fill="#FDDCB5" />
+      {/* Indigo jacket — clips naturally at SVG viewport bottom */}
+      <path d="M4 39 Q10 32 15.5 31 L18 34.5 L20.5 31 Q26 32 32 39 Z" fill="#4338CA" />
+      {/* White V-collar */}
+      <path d="M18 34.5 L15.5 31 Q17 33 18 33.5 Q19 33 20.5 31 Z" fill="white" opacity="0.95" />
     </svg>
   );
 }
