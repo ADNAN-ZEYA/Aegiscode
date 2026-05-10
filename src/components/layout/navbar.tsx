@@ -42,7 +42,11 @@ export function Navbar() {
           <AuthControls />
         </div>
 
-        <MobileNav />
+        {/* Mobile-only: theme toggle + hamburger */}
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <MobileNav />
+        </div>
       </div>
     </header>
   );
