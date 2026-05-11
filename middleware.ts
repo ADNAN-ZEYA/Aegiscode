@@ -66,7 +66,42 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   maybePrune();
 
-  // ── Admin route protection ────────────────────────────────────────────────
+  // ── Admin HTTP Basic Auth gate ────────────────────────────────────────────
+  // Hard perimeter check that runs BEFORE Firebase session verification.
+  // Only active when ADMIN_MIDDLEWARE_SECRET is set (skipped in local dev
+  // without the var so you don't get locked out accidentally).
+  if (pathname.startsWith('/admin')) {
+    const secret = process.env.ADMIN_MIDDLEWARE_SECRET;
+
+    if (secret) {
+      const authHeader = request.headers.get('authorization') ?? '';
+      let authorized = false;
+
+      if (authHeader.startsWith('Basic ')) {
+        try {
+          // atob is available on the Vercel Edge Runtime
+          const decoded = atob(authHeader.slice(6)); // "username:password"
+          const colonIdx = decoded.indexOf(':');
+          const password = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : decoded;
+          authorized = password === secret;
+        } catch {
+          // Malformed base64 — fall through as unauthorized
+        }
+      }
+
+      if (!authorized) {
+        return new NextResponse('Unauthorized', {
+          status: 401,
+          headers: {
+            'WWW-Authenticate': 'Basic realm="AegisCode Admin", charset="UTF-8"',
+          },
+        });
+      }
+    }
+  }
+
+  // ── Admin Firebase session gate ───────────────────────────────────────────
+  // Runs only after the Basic Auth gate above has passed.
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const session = request.cookies.get('session')?.value;
     if (!session) {
