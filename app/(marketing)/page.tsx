@@ -62,14 +62,6 @@ const FEATURES = [
   },
 ];
 
-const TOPICS = [
-  'Data Structures & Algorithms',
-  'Operating Systems',
-  'DBMS',
-  'Computer Networks',
-  'System Design',
-  'Web Development',
-];
 
 export default async function HomePage() {
   const [blogs, studyMaterials, courses, user, stats] = await Promise.all([
@@ -122,17 +114,7 @@ export default async function HomePage() {
               </Button>
             </div>
 
-            {/* Topic pills */}
-            <div className="flex flex-wrap gap-2">
-              {TOPICS.map((topic) => (
-                <span
-                  key={topic}
-                  className="rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground"
-                >
-                  {topic}
-                </span>
-              ))}
-            </div>
+
           </div>
         </FadeIn>
 
