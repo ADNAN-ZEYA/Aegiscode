@@ -31,7 +31,7 @@ export default async function AdminCourseModulesPage({
             <ArrowLeft size={16} />
             Back to Courses
           </Link>
-          <h1 className="font-serif text-4xl">Modules: {course.title}</h1>
+          <h1 className="font-serif text-2xl sm:text-4xl">Modules: {course.title}</h1>
           <p className="text-muted-foreground">Manage individual lessons and content structure</p>
         </div>
         <Link href={`/admin/courses/${slug}/modules/new`}>

@@ -22,7 +22,7 @@ export function SignInPrompt() {
         </div>
 
         <div className="space-y-4">
-          <h1 className="font-serif text-5xl font-semibold tracking-tight sm:text-6xl">
+          <h1 className="font-serif text-4xl font-semibold tracking-tight sm:text-6xl">
             Your learning journey{' '}
             <span className="bg-gradient-to-r from-primary via-indigo-400 to-primary bg-clip-text text-transparent">
               starts here

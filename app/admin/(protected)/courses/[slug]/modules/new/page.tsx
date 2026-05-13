@@ -30,7 +30,7 @@ export default async function AdminNewModulePage({
           <ArrowLeft size={16} />
           Back to Modules
         </Link>
-        <h1 className="font-serif text-4xl">Add New Module</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Add New Module</h1>
         <p className="text-muted-foreground">Course: {course.title}</p>
       </div>
 

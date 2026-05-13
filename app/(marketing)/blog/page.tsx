@@ -35,7 +35,7 @@ export default async function BlogIndexPage({
     <div className="mx-auto max-w-7xl space-y-10 px-4 py-16 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Blog</p>
-        <h1 className="font-serif text-4xl">Long-form technical publishing</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Long-form technical publishing</h1>
         <p className="max-w-3xl text-muted-foreground">
           Read educational essays, architecture notes, and engineering explainers inside a reading-focused interface optimized for SEO and mobile devices.
         </p>

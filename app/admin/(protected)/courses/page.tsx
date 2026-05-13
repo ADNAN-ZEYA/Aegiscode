@@ -15,7 +15,7 @@ export default async function AdminCoursesPage() {
     <div className="space-y-8">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Courses</p>
-        <h1 className="font-serif text-4xl">Course Management</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Course Management</h1>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">

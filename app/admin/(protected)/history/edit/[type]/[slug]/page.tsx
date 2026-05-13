@@ -48,7 +48,7 @@ export default async function AdminEditContentPage({ params }: { params: Promise
     <div className="space-y-8">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Editing Content</p>
-        <h1 className="font-serif text-4xl">Edit: {docData.title}</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Edit: {docData.title}</h1>
       </div>
       <Card>
         <CardHeader>

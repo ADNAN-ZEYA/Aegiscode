@@ -36,7 +36,7 @@ export default async function AdminHistoryPage() {
     <div className="space-y-8">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Management</p>
-        <h1 className="font-serif text-4xl">Content History</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Content History</h1>
         <p className="mt-2 text-muted-foreground">View and edit your previously created content.</p>
       </div>
 
@@ -53,8 +53,8 @@ export default async function AdminHistoryPage() {
             <div className="space-y-4">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {history.map((item: any) => (
-                <div key={`${item.contentType}-${item.id}`} className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50">
-                  <div className="flex items-center gap-4">
+                <div key={`${item.contentType}-${item.id}`} className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 flex-1 items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                       {item.contentType === 'blog' ? (
                         <FileText className="h-5 w-5 text-primary" />
@@ -62,10 +62,10 @@ export default async function AdminHistoryPage() {
                         <BookOpen className="h-5 w-5 text-primary" />
                       )}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-medium text-card-foreground">{item.title}</h3>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <Badge 
+                        <Badge
                           className={`px-1.5 py-0 text-[10px] uppercase ${item.status === 'published' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
                         >
                           {item.status}
@@ -80,7 +80,7 @@ export default async function AdminHistoryPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
                     <Link href={`/admin/history/edit/${item.contentType}/${item.id}`}>
                       <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background transition-colors hover:bg-primary hover:text-primary-foreground">
                         <Edit className="h-4 w-4" />

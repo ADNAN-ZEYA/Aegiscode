@@ -35,7 +35,7 @@ export default async function StudyMaterialsPage({
     <div className="mx-auto max-w-7xl space-y-10 px-4 py-16 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Study materials</p>
-        <h1 className="font-serif text-4xl">Online modules built for completion, not downloads</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Online modules built for completion, not downloads</h1>
       </div>
       <form className="space-y-4">
         <SearchFilters categories={categories} basePath="/study-materials" activeCategory={params.category} query={params.q} />

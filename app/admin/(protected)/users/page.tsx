@@ -8,7 +8,7 @@ export default async function AdminUsersPage() {
     <div className="space-y-8">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">User management</p>
-        <h1 className="font-serif text-4xl">Roles, access, and moderation</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Roles, access, and moderation</h1>
       </div>
       <div className="grid gap-4">
         {users.map((user) => (

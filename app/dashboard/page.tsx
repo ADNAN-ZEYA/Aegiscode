@@ -163,7 +163,7 @@ export default async function DashboardPage() {
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
           Student dashboard
         </p>
-        <h1 className="font-serif text-4xl">Welcome back, {firstName}</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl">Welcome back, {firstName}</h1>
         <p className="text-muted-foreground">
           Track your progress, continue learning, and stay on schedule.
         </p>

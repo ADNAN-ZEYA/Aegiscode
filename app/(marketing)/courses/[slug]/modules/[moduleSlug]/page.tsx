@@ -57,7 +57,7 @@ export default async function CourseModulePage({
       <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
         <header className="mb-10 space-y-4">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">{course.title}</p>
-          <h1 className="font-serif text-4xl">{courseModule.title}</h1>
+          <h1 className="font-serif text-3xl sm:text-4xl">{courseModule.title}</h1>
           <p className="text-muted-foreground">{courseModule.summary}</p>
         </header>
         <RichContentRenderer markdown={courseModule.markdown} />

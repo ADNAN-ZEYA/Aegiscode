@@ -19,7 +19,7 @@ export default async function QuizzesPage() {
     <div className="mx-auto max-w-7xl space-y-10 px-4 py-16 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Mock tests</p>
-        <h1 className="font-serif text-4xl">Practice with fast, focused assessments</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Practice with fast, focused assessments</h1>
       </div>
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {quizzes.items.map((quiz) => (

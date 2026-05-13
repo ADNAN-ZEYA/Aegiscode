@@ -36,7 +36,7 @@ export default async function CoursesPage({
     <div className="mx-auto max-w-7xl space-y-10 px-4 py-16 sm:px-6 lg:px-8">
       <div className="space-y-4">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Courses</p>
-        <h1 className="font-serif text-4xl">Structured learning tracks for engineering students</h1>
+        <h1 className="font-serif text-2xl sm:text-4xl">Structured learning tracks for engineering students</h1>
         <p className="max-w-3xl text-muted-foreground">
           Admins can manage PDF source material privately, while students read clean lesson modules online in a revision-friendly format.
         </p>

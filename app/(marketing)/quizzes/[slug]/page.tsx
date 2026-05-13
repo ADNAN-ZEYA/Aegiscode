@@ -28,7 +28,7 @@ export default async function QuizPage({ params }: { params: Promise<{ slug: str
       <ViewTracker slug={quiz.slug} type="quiz" />
       <div className="space-y-4">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">{quiz.categorySlug.replace(/-/g, ' ')}</p>
-        <h1 className="font-serif text-4xl">{quiz.title}</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl">{quiz.title}</h1>
         <p className="text-muted-foreground">{quiz.excerpt}</p>
       </div>
       <QuizTaker questions={quiz.questions} />

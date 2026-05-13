@@ -68,7 +68,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
       <div className="mx-auto max-w-6xl space-y-10 px-4 py-16 sm:px-6 lg:px-8">
         <div className="space-y-5">
           <Badge>{course.level}</Badge>
-          <h1 className="font-serif text-5xl">{course.title}</h1>
+          <h1 className="font-serif text-3xl sm:text-5xl">{course.title}</h1>
           <p className="max-w-3xl text-lg text-muted-foreground">{course.excerpt}</p>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span>{course.modules.length} modules</span>
