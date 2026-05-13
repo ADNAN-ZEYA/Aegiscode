@@ -24,7 +24,6 @@ export function RichContentRenderer({ markdown, blocks }: { markdown: string; bl
           pre: ({ children }) => <>{children}</>,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           code: ({ node, className, children, ...props }: any) => {
-            console.log("language received:", className);
             const match = /language-([^\s]+)/.exec(className || '');
             const lang = match ? match[1] : '';
 
