@@ -104,6 +104,12 @@ export function Footer() {
             </Link>
           </div>
         </div>
+
+        {/* Credit line */}
+        <div className="mt-6 border-t border-border pt-6 text-center text-xs text-muted-foreground/70">
+          <p>Developed by MK COGNITIONX TECH LLP</p>
+          <p className="mt-1">Version 2 Coming Soon 🚀</p>
+        </div>
       </div>
     </footer>
   );
